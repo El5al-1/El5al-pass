@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#050505" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="description" content="EL5AL PASS — a private, offline-first personal account manager." />
+<title>EL5AL PASS — Personal Account Manager</title>
+<style>
+/* ============================================================
+   EL5AL PASS — single-file offline account manager
+   Design tokens
+   ============================================================ */
+:root{
+  color-scheme: dark;
+  --bg:#050505;
+  --bg2:#0a0a0a;
+  --surface:#101010;
+  --surface2:#171717;
+  --border:#242424;
+  --border2:#303030;
+  --primary:#A3E635;
+  --primary-hover:#b9f255;
+  --primary-soft:rgba(163,230,53,.12);
+  --text:#f4f4f5;
+  --muted:#9ca3af;
+  --faint:#6b7280;
+  --danger:#ef4444;
+  --danger-soft:rgba(239,68,68,.10);
+  --info:#38bdf8;
+  --r-lg:18px;
+  --r-md:12px;
+  --r-sm:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+}
+body::before{
+  content:"";
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(700px 320px at 50% -90px, rgba(163,230,53,.08), transparent 70%);
+}
+::selection{background:rgba(163,230,53,.30)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#242424;border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:#303030}
+::-webkit-scrollbar-track{background:transparent}
+button{font-family:inherit;color:inherit}
+input,textarea,select{font-family:inherit;color:inherit}
+input::placeholder,textarea::placeholder{color:#555555}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.hidden{display:none!important}
+
+/* ============================================================
+   Reusable components
+   ============================================================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:none;cursor:pointer;font-weight:600;font-size:14px;
+  border-radius:var(--r-md);padding:12px 18px;
+  transition:transform .15s ease, background .15s ease, border-color .15s ease, color .15s ease;
+  white-space:nowrap;
+}
+.btn:active{transform:scale(.97)}
+.btn svg{width:17px;height:17px;flex-shrink:0}
+.btn-primary{background:var(--primary);color:#0b0f02;box-shadow:0 6px 20px rgba(163,230,53,.15)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-ghost{background:var(--surface2);border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--border2);background:#1d1d1d}
+.btn-danger{background:var(--danger-soft);border:1px solid rgba(239,68,68,.35);color:#f87171}
+.btn-danger:hover{background:rgba(239,68,68,.18)}
+.btn.sm{padding:9px 13px;font-size:13px;border-radius:var(--r-sm)}
+.btn.sm svg{width:15px;height:15px}
+.btn.full{width:100%}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+
+.icon-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:38px;height:38px;border-radius:var(--r-sm);
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--muted);cursor:pointer;transition:.15s;flex-shrink:0;
+}
+.icon-btn:hover{color:var(--text);border-color:var(--border2);background:#1e1e1e}
+.icon-btn svg{width:18px;height:18px}
+
+.input{
+  width:100%;background:var(--bg2);border:1px solid var(--border);
+  color:var(--text);border-radius:var(--r-md);
+  padding:12px 14px;font-size:15px;outline:none;transition:border .15s, box-shadow .15s;
+}
+.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.input.bad{border-color:var(--danger)}
+.textarea{resize:vertical;min-height:74px}
+.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;cursor:pointer}
+.label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.req{color:var(--primary)}
+.field{margin-bottom:15px}
+.field-error{display:none;font-size:12px;color:#f87171;margin-top:5px}
+.field-error.show{display:block}
+.hint{font-size:12px;color:var(--faint);margin-top:6px}
+.msg{font-size:12.5px;margin-top:8px;min-height:16px}
+.msg.ok{color:var(--primary)}
+.msg.error{color:#f87171}
+
+/* ============================================================
+   Lock / Setup screens
+   ============================================================ */
+.screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px 16px;position:relative;z-index:1}
+.lock-card{width:100%;max-width:390px;text-align:center}
+.lock-logo{
+  width:64px;height:64px;border-radius:18px;margin:0 auto 18px;
+  background:var(--primary);color:#0b0f02;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 12px 40px rgba(163,230,53,.25);
+}
+.lock-logo svg{width:32px;height:32px}
+.lock-card h1{font-size:22px;font-weight:800;letter-spacing:.6px}
+.lock-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.lock-clock{font-size:34px;font-weight:200;letter-spacing:2px;margin:16px 0 4px;color:#e5e7eb}
+.lock-reason{font-size:12px;color:var(--primary);min-height:18px;margin-bottom:10px}
+.pin-input{
+  text-align:center;font-size:24px;letter-spacing:10px;text-indent:10px;
+  padding:14px;font-weight:600;
+}
+.lock-note{
+  margin-top:18px;font-size:11.5px;color:var(--faint);line-height:1.6;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:12px;
+}
+.lock-error{font-size:12.5px;color:#f87171;min-height:18px;margin-top:10px}
+.lock-card .btn{width:100%;margin-top:6px}
+.shake{animation:shake .4s ease}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-5px)}
+  80%{transform:translateX(5px)}
+}
+
+/* ============================================================
+   Main app shell
+   ============================================================ */
+#mainApp{position:relative;z-index:1}
+.shell{max-width:1080px;margin:0 auto;padding:20px 16px 48px}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{
+  width:44px;height:44px;border-radius:13px;flex-shrink:0;
+  background:var(--primary);color:#0b0f02;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 24px rgba(163,230,53,.2);
+}
+.logo svg{width:24px;height:24px}
+.brand-text{display:flex;flex-direction:column;min-width:0}
+.brand-name{font-size:16px;font-weight:800;letter-spacing:1.2px}
+.brand-sub{font-size:11px;color:var(--faint);letter-spacing:.3px}
+.topbar-actions{display:flex;gap:8px}
+
+.hero{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  background:linear-gradient(135deg, rgba(163,230,53,.10), rgba(163,230,53,.02) 55%, transparent);
+  border:1px solid rgba(163,230,53,.18);
+  border-radius:var(--r-lg);
+  padding:20px;
+  margin-bottom:18px;
+}
+.hero-eyebrow{font-size:13px;color:var(--primary);font-weight:600;letter-spacing:.4px}
+.hero-title{font-size:24px;font-weight:800;margin-top:2px}
+.hero-unit{font-size:14px;font-weight:500;color:var(--muted);margin-left:6px}
+
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.search-box{
+  flex:1 1 240px;display:flex;align-items:center;gap:10px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:0 14px;transition:border .15s, box-shadow .15s;
+}
+.search-box:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.search-box>svg{width:17px;height:17px;color:var(--faint);flex-shrink:0}
+.search-input{
+  flex:1;background:none;border:none;outline:none;
+  padding:13px 0;font-size:15px;min-width:0;
+}
+.search-input::-webkit-search-cancel-button{-webkit-appearance:none}
+.toolbar-actions{display:flex;gap:8px;align-items:center}
+.result-info{font-size:12px;color:var(--faint);margin:2px 2px 14px;min-height:16px}
+
+/* ============================================================
+   Account cards
+   ============================================================ */
+.accounts-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(295px,1fr))}
+.accounts-grid.list{grid-template-columns:1fr}
+.card{
+  background:linear-gradient(180deg,#131313,#0d0d0d);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:16px;
+  display:flex;flex-direction:column;gap:12px;
+  transition:border-color .18s ease, transform .18s ease;
+  animation:cardIn .25s ease both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card:hover{border-color:rgba(163,230,53,.35)}
+.card-head{display:flex;align-items:center;gap:12px;min-width:0}
+.avatar{
+  width:46px;height:46px;border-radius:13px;flex-shrink:0;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:19px;background:var(--surface2);border:1px solid var(--border);
+}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar span{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+button{-webkit-user-select:none;user-select:none}
+.card-title{min-width:0}
+.card-title h3{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-title .uname{font-size:12.5px;color:var(--muted);word-break:break-all}
+.no-val{color:#4b5563;font-style:italic}
+.pass-row{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:#080808;border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:7px 7px 7px 13px;
+}
+.pass-text{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:14px;letter-spacing:1px;word-break:break-all;min-width:0;
+}
+.notes{
+  font-size:12.5px;color:var(--muted);
+  background:#080808;border:1px dashed var(--border);border-radius:var(--r-sm);
+  padding:9px 11px;white-space:pre-wrap;word-break:break-word;
+  max-height:86px;overflow:auto;
+}
+.card-actions{display:flex;flex-wrap:wrap;gap:7px}
+.act{
+  flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  font-size:12.5px;font-weight:600;padding:9px 10px;border-radius:var(--r-sm);
+  background:var(--surface2);border:1px solid var(--border);color:var(--muted);
+  cursor:pointer;transition:.15s;
+}
+.act:hover{color:var(--text);border-color:var(--border2)}
+.act svg{width:14px;height:14px;flex-shrink:0}
+.act.danger:hover{color:#f87171;border-color:rgba(239,68,68,.4);background:var(--danger-soft)}
+
+/* List view layout */
+.accounts-grid.list .card{flex-direction:row;align-items:center;flex-wrap:wrap;gap:10px 14px}
+.accounts-grid.list .card-head{flex:1 1 190px}
+.accounts-grid.list .pass-row{flex:1 1 170px}
+.accounts-grid.list .card-actions{flex:2 1 270px}
+.accounts-grid.list .notes{display:none}
+
+/* Empty state */
+.empty{
+  text-align:center;padding:60px 20px;
+  border:1px dashed var(--border);border-radius:var(--r-lg);
+  background:rgba(255,255,255,.012);
+}
+.empty-icon{
+  width:62px;height:62px;margin:0 auto 16px;border-radius:18px;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--faint);
+}
+.empty-icon svg{width:28px;height:28px}
+.empty h3{font-size:17px;font-weight:700}
+.empty p{font-size:13.5px;color:var(--muted);margin:6px 0 18px}
+
+.footer{
+  margin-top:34px;padding-top:18px;border-top:1px solid var(--border);
+  font-size:11.5px;color:var(--faint);text-align:center;line-height:1.7;
+}
+.footer svg{width:13px;height:13px;vertical-align:-2px;margin-right:4px;color:var(--primary)}
+
+/* ============================================================
+   Modals
+   ============================================================ */
+.overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;overflow-y:auto;
+}
+.modal{
+  width:100%;max-width:470px;max-height:calc(100vh - 32px);overflow-y:auto;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--r-lg);padding:22px;
+  animation:pop .18s ease both;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+}
+.modal-sm{max-width:400px;text-align:center}
+@keyframes pop{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+.modal-head h2{font-size:18px;font-weight:800}
+.modal-sub{font-size:12px;color:var(--faint);margin-top:2px}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions .btn{flex:1}
+
+/* Image picker */
+.image-picker{display:flex;gap:14px;align-items:center;margin-bottom:18px}
+.preview{
+  width:66px;height:66px;border-radius:16px;flex-shrink:0;overflow:hidden;
+  border:1px dashed var(--border2);background:var(--bg2);
+  display:flex;align-items:center;justify-content:center;color:var(--faint);
+}
+.preview svg{width:24px;height:24px}
+.preview img{width:100%;height:100%;object-fit:cover;display:block}
+.picker-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.picker-actions .btn{width:auto}
+
+/* Password field with eye */
+.pass-wrap{position:relative}
+.pass-wrap .input{padding-right:46px}
+.pass-wrap .icon-btn{
+  position:absolute;right:5px;top:50%;transform:translateY(-50%);
+  width:34px;height:34px;background:transparent;border-color:transparent;
+}
+.pass-wrap .icon-btn:hover{background:var(--surface2);border-color:var(--border)}
+
+/* ============================================================
+   Settings
+   ============================================================ */
+.settings-section{
+  border:1px solid var(--border);border-radius:var(--r-md);
+  padding:16px;margin-bottom:14px;background:#0c0c0c;
+}
+.settings-section h3{
+  font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;
+  color:var(--muted);margin-bottom:12px;font-weight:700;
+}
+.settings-section.danger-zone{border-color:rgba(239,68,68,.25)}
+.settings-section.note p{font-size:12px;color:var(--faint);line-height:1.7}
+.settings-section.note strong{color:var(--muted)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;font-size:13.5px}
+.row span{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn-row .btn{flex:1}
+
+/* Toggle switch */
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch .slider{position:absolute;inset:0;background:#262626;border-radius:999px;transition:.2s;cursor:pointer}
+.switch .slider::before{
+  content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;
+  background:#7a7a7a;border-radius:50%;transition:.2s;
+}
+.switch input:checked + .slider{background:rgba(163,230,53,.25)}
+.switch input:checked + .slider::before{transform:translateX(20px);background:var(--primary)}
+
+/* ============================================================
+   Confirm dialog
+   ============================================================ */
+.confirm-icon{
+  width:54px;height:54px;border-radius:16px;margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--danger-soft);color:#f87171;border:1px solid rgba(239,68,68,.3);
+}
+.confirm-icon svg{width:26px;height:26px}
+.modal-sm h2{font-size:17px;font-weight:800;margin-bottom:8px}
+.modal-sm p{font-size:13.5px;color:var(--muted);line-height:1.6}
+
+/* ============================================================
+   Toasts
+   ============================================================ */
+#toastContainer{
+  position:fixed;top:14px;left:50%;transform:translateX(-50%);
+  z-index:300;display:flex;flex-direction:column;gap:8px;
+  width:calc(100% - 28px);max-width:390px;pointer-events:none;
+}
+.toast{
+  display:flex;align-items:center;gap:10px;
+  background:#141414;border:1px solid var(--border2);border-left:3px solid var(--primary);
+  border-radius:var(--r-md);padding:12px 14px;font-size:13.5px;
+  box-shadow:0 14px 40px rgba(0,0,0,.55);
+  opacity:0;transform:translateY(-10px);transition:opacity .25s ease, transform .25s ease;
+}
+.toast.show{opacity:1;transform:none}
+.toast.error{border-left-color:var(--danger)}
+.toast.info{border-left-color:var(--info)}
+.toast-icon{display:flex;flex-shrink:0}
+.toast-icon svg{width:17px;height:17px}
+.toast.success .toast-icon{color:var(--primary)}
+.toast.error .toast-icon{color:#f87171}
+.toast.info .toast-icon{color:var(--info)}
+.toast-msg{min-width:0;word-break:break-word}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width:560px){
+  .hero{flex-direction:column;align-items:stretch}
+  .hero .btn{width:100%}
+  .hero-title{font-size:21px}
+  .toolbar-actions{flex:1 1 100%;justify-content:space-between}
+  .toolbar-actions .btn{flex:1}
+  .brand-sub{display:none}
+  .accounts-grid.list .card-head{flex:1 1 100%}
+  .accounts-grid.list .pass-row{flex:1 1 100%}
+  .accounts-grid.list .card-actions{flex:1 1 100%}
+  .grid2{grid-template-columns:1fr}
+  .modal-actions{flex-direction:column-reverse}
+  .modal-actions .btn{width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOCK SCREEN ==================== -->
+<div id="lockScreen" class="screen hidden">
+  <div class="lock-card" id="lockCard">
+    <div class="lock-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+    </div>
+    <h1>EL5AL PASS</h1>
+    <p class="lock-sub">Enter your Master PIN to continue</p>
+    <div class="lock-clock" id="lockClock">--:--</div>
+    <div class="lock-reason" id="lockReason"></div>
+    <form id="unlockForm">
+      <input id="pinInput" class="input pin-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••" autocomplete="off" aria-label="Master PIN" />
+      <div class="lock-error" id="lockError"></div>
+      <button type="submit" class="btn btn-primary" id="unlockBtn">Unlock</button>
+    </form>
+    <p class="lock-note">
+      Forgot your PIN? It cannot be recovered. You can reset the app from your browser/site settings (&ldquo;Clear data&rdquo;), but that deletes all saved accounts.
+    </p>
+  </div>
+</div>
+
+<!-- ==================== SETUP SCREEN (first run) ==================== -->
+<div id="setupScreen" class="screen hidden">
+  <div class="lock-card" id="setupCard">
+    <div class="lock-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+    </div>
+    <h1>Create Master PIN</h1>
+    <p class="lock-sub">One PIN protects all your accounts on this device</p>
+    <form id="setupForm" style="margin-top:20px;text-align:left">
+      <div class="field">
+        <label class="label" for="setupPinInput">New PIN (4&ndash;6 digits)</label>
+        <input id="setupPinInput" class="input pin-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label class="label" for="setupPinConfirmInput">Confirm PIN</label>
+        <input id="setupPinConfirmInput" class="input pin-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••" autocomplete="off" />
+      </div>
+      <div class="lock-error" id="setupError" style="text-align:center"></div>
+      <button type="submit" class="btn btn-primary" id="setupBtn">Set PIN &amp; Enter</button>
+    </form>
+    <p class="lock-note">
+      <strong style="color:#9ca3af">Privacy:</strong> everything stays on this device &mdash; no internet, no servers, no tracking.
+      LocalStorage is <strong style="color:#9ca3af">not encrypted</strong>; the PIN only deters casual access. Use a device you trust.
+    </p>
+  </div>
+</div>
+
+<!-- ==================== MAIN APP ==================== -->
+<div id="mainApp" class="hidden">
+  <div class="shell">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">EL5AL PASS</span>
+          <span class="brand-sub">Personal Account Manager</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.08a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.08a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.08a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <button class="icon-btn" id="lockBtn" title="Lock now" aria-label="Lock now">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <p class="hero-eyebrow">Welcome Back</p>
+        <h2 class="hero-title"><span id="totalCount">0</span><span class="hero-unit">accounts saved</span></h2>
+      </div>
+      <button class="btn btn-primary" id="addBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add New Account
+      </button>
+    </section>
+
+    <section class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="searchInput" class="search-input" type="search" placeholder="Search by name, username or notes&hellip;" autocomplete="off" aria-label="Search accounts" />
+      </div>
+      <div class="toolbar-actions">
+        <button class="icon-btn" id="viewToggleBtn" title="Switch view" aria-label="Switch view"></button>
+        <button class="btn btn-ghost sm" id="hideAllBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+          Hide All
+        </button>
+      </div>
+    </section>
+    <p class="result-info" id="resultInfo"></p>
+
+    <section id="accountsContainer" class="accounts-grid"></section>
+
+    <div id="emptyState" class="empty hidden">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3 id="emptyTitle">No accounts yet</h3>
+      <p id="emptyText">Tap &ldquo;Add New Account&rdquo; to store your first login.</p>
+      <button class="btn btn-primary" id="emptyAddBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add New Account
+      </button>
+    </div>
+
+    <footer class="footer">
+      <p>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Offline &amp; private &mdash; nothing ever leaves this device. LocalStorage is not encrypted, so keep your device secure.
+      </p>
+    </footer>
+  </div>
+</div>
+
+<!-- ==================== ADD / EDIT ACCOUNT MODAL ==================== -->
+<div id="accountModal" class="overlay hidden">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <div>
+        <h2 id="modalTitle">Add New Account</h2>
+        <p class="modal-sub" id="modalSub">Saved locally on this device only</p>
+      </div>
+      <button class="icon-btn" id="closeModalBtn" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <form id="accountForm" novalidate>
+      <div class="image-picker">
+        <div class="preview" id="imagePreview">
+          <img id="previewImg" class="hidden" alt="Account image" />
+          <div id="imagePlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+        </div>
+        <div class="picker-actions">
+          <button type="button" class="btn btn-ghost sm" id="pickImageBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+            Upload Image
+          </button>
+          <button type="button" class="btn btn-ghost sm hidden" id="removeImageBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Remove
+          </button>
+          <p class="hint">Optional &mdash; auto-compressed to save storage.</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="nameInput">Account Name <span class="req">*</span></label>
+        <input id="nameInput" class="input" placeholder="e.g. Instagram" autocomplete="off" maxlength="80" />
+        <p class="field-error" id="nameError">Please enter an account name.</p>
+      </div>
+
+      <div class="field">
+        <label class="label" for="usernameInput">Username / Email</label>
+        <input id="usernameInput" class="input" placeholder="user@example.com" autocomplete="off" maxlength="160" />
+      </div>
+
+      <div class="field">
+        <label class="label" for="passwordInput">Password</label>
+        <div class="pass-wrap">
+          <input id="passwordInput" class="input" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="new-password" maxlength="300" />
+          <button type="button" class="icon-btn" id="toggleModalPass" aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="notesInput">Notes <span style="color:var(--faint);font-weight:400">(optional)</span></label>
+        <textarea id="notesInput" class="input textarea" rows="3" placeholder="Recovery codes, security questions, links&hellip;" maxlength="2000"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="cancelModalBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="saveAccountBtn">Save Account</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== SETTINGS MODAL ==================== -->
+<div id="settingsModal" class="overlay hidden">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-head">
+      <h2 id="settingsTitle">Settings</h2>
+      <button class="icon-btn" id="closeSettingsBtn" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <section class="settings-section">
+      <h3>Master PIN</h3>
+      <div class="grid2">
+        <div class="field"><label class="label" for="oldPinInput">Current PIN</label><input id="oldPinInput" class="input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" /></div>
+        <div class="field"><label class="label" for="newPinInput">New PIN</label><input id="newPinInput" class="input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" /></div>
+      </div>
+      <div class="field"><label class="label" for="confirmPinInput">Confirm New PIN</label><input id="confirmPinInput" class="input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" /></div>
+      <button class="btn btn-ghost full" id="changePinBtn">Update Master PIN</button>
+      <p class="msg" id="pinMsg"></p>
+    </section>
+
+    <section class="settings-section">
+      <h3>Auto Lock</h3>
+      <div class="row">
+        <span>Lock when app goes to background</span>
+        <label class="switch"><input type="checkbox" id="lockOnExitToggle" /><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <span>Lock after inactivity</span>
+        <label class="switch"><input type="checkbox" id="autoLockToggle" /><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <span>Idle timeout</span>
+        <select id="idleSelect" class="input select" style="width:auto;min-width:130px">
+          <option value="1">1 minute</option>
+          <option value="2">2 minutes</option>
+          <option value="5">5 minutes</option>
+          <option value="15">15 minutes</option>
+          <option value="30">30 minutes</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h3>Backup &amp; Restore</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">Export a plain (unencrypted) JSON file of your accounts, or restore from a previous backup. Keep backups in a safe place.</p>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="exportBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Export Backup
+        </button>
+        <button class="btn btn-ghost" id="importBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          Restore Backup
+        </button>
+      </div>
+    </section>
+
+    <section class="settings-section danger-zone">
+      <h3>Danger Zone</h3>
+      <button class="btn btn-danger full" id="clearDataBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+        Delete All Data
+      </button>
+    </section>
+
+    <section class="settings-section note">
+      <h3>Privacy Notice</h3>
+      <p>
+        EL5AL PASS runs fully offline. All accounts are stored only in this device&rsquo;s
+        <strong>LocalStorage</strong> &mdash; nothing is uploaded, synced or tracked.
+        LocalStorage is <strong>not encrypted</strong>: anyone with access to this device (or its browser data)
+        can read the stored values. Your Master PIN is saved as a one-way hash, which deters casual access but is
+        <strong>not real encryption</strong>. Do not store highly sensitive credentials on shared or rooted devices,
+        and keep an exported backup in a safe place.
+      </p>
+    </section>
+  </div>
+</div>
+
+<!-- ==================== CONFIRM DIALOG ==================== -->
+<div id="confirmModal" class="overlay hidden">
+  <div class="modal modal-sm" role="dialog" aria-modal="true">
+    <div class="confirm-icon" id="confirmIcon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+    </div>
+    <h2 id="confirmTitle">Are you sure?</h2>
+    <p id="confirmMessage"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="confirmOkBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOASTS ==================== -->
+<div id="toastContainer" aria-live="polite"></div>
+
+<!-- hidden file inputs -->
+<input type="file" id="imageInput" accept="image/*" class="hidden" />
+<input type="file" id="importInput" accept=".json,application/json" class="hidden" />
+
+<script>
+(function () {
+  'use strict';
+
+  /* ============================================================
+     CONSTANTS
+     ============================================================ */
+  var K = {
+    accounts: 'el5al_accounts_v1',
+    pinHash:  'el5al_pin_hash_v1',
+    settings: 'el5al_settings_v1'
+  };
+
+  var DEFAULT_SETTINGS = { autoLock: true, idleMinutes: 5, lockOnExit: true, view: 'grid' };
+  var REVEAL_TIMEOUT = 30000; // auto-hide revealed passwords after 30s
+  var MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+  var AVATAR_COLORS = ['#A3E635', '#22D3EE', '#F472B6', '#FB923C', '#818CF8', '#34D399', '#F87171', '#FBBF24'];
+
+  /* ============================================================
+     STATE
+     ============================================================ */
+  var state = {
+    accounts: [],
+    settings: Object.assign({}, DEFAULT_SETTINGS),
+    revealed: new Set(),
+    unlocked: false,
+    editingId: null,
+    pendingImage: null,
+    lastActivity: Date.now()
+  };
+
+  var revealTimer = null;
+  var confirmResolver = null;
+
+  /* ============================================================
+     DOM HELPERS
+     ============================================================ */
+  function $(id) { return document.getElementById(id); }
+
+  var el = {
+    lockScreen: $('lockScreen'), lockCard: $('lockCard'), lockClock: $('lockClock'), lockReason: $('lockReason'),
+    pinInput: $('pinInput'), lockError: $('lockError'), unlockForm: $('unlockForm'), unlockBtn: $('unlockBtn'),
+    setupScreen: $('setupScreen'), setupCard: $('setupCard'), setupForm: $('setupForm'),
+    setupPinInput: $('setupPinInput'), setupPinConfirmInput: $('setupPinConfirmInput'),
+    setupError: $('setupError'), setupBtn: $('setupBtn'),
+    mainApp: $('mainApp'),
+    settingsBtn: $('settingsBtn'), lockBtn: $('lockBtn'),
+    totalCount: $('totalCount'), addBtn: $('addBtn'),
+    searchInput: $('searchInput'), viewToggleBtn: $('viewToggleBtn'), hideAllBtn: $('hideAllBtn'),
+    resultInfo: $('resultInfo'), accountsContainer: $('accountsContainer'),
+    emptyState: $('emptyState'), emptyTitle: $('emptyTitle'), emptyText: $('emptyText'), emptyAddBtn: $('emptyAddBtn'),
+    accountModal: $('accountModal'), accountForm: $('accountForm'),
+    modalTitle: $('modalTitle'), modalSub: $('modalSub'),
+    closeModalBtn: $('closeModalBtn'), cancelModalBtn: $('cancelModalBtn'), saveAccountBtn: $('saveAccountBtn'),
+    nameInput: $('nameInput'), nameError: $('nameError'),
+    usernameInput: $('usernameInput'), passwordInput: $('passwordInput'), notesInput: $('notesInput'),
+    toggleModalPass: $('toggleModalPass'),
+    imagePreview: $('imagePreview'), previewImg: $('previewImg'), imagePlaceholder: $('imagePlaceholder'),
+    pickImageBtn: $('pickImageBtn'), removeImageBtn: $('removeImageBtn'), imageInput: $('imageInput'),
+    settingsModal: $('settingsModal'), closeSettingsBtn: $('closeSettingsBtn'),
+    oldPinInput: $('oldPinInput'), newPinInput: $('newPinInput'), confirmPinInput: $('confirmPinInput'),
+    changePinBtn: $('changePinBtn'), pinMsg: $('pinMsg'),
+    lockOnExitToggle: $('lockOnExitToggle'), autoLockToggle: $('autoLockToggle'), idleSelect: $('idleSelect'),
+    exportBtn: $('exportBtn'), importBtn: $('importBtn'), importInput: $('importInput'),
+    clearDataBtn: $('clearDataBtn'),
+    confirmModal: $('confirmModal'), confirmTitle: $('confirmTitle'), confirmMessage: $('confirmMessage'),
+    confirmOkBtn: $('confirmOkBtn'), confirmCancelBtn: $('confirmCancelBtn'),
+    toastContainer: $('toastContainer')
+  };
+
+  /* ============================================================
+     INLINE SVG ICONS (no external assets)
+     ============================================================ */
+  function svg(inner) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+  }
+  var icons = {
+    eye:     svg('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>'),
+    eyeOff:  svg('<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>'),
+    copy:    svg('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
+    edit:    svg('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/>'),
+    trash:   svg('<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>'),
+    user:    svg('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+    grid:    svg('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>'),
+    list:    svg('<line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/>'),
+    unlock:  svg('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>'),
+    check:   svg('<polyline points="20 6 9 17 4 12"/>'),
+    x:       svg('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'),
+    info:    svg('<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/>')
+  };
+
+  /* ============================================================
+     UTILITIES
+     ============================================================ */
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function validPin(pin) { return /^\d{4,6}$/.test(pin); }
+
+  function avatarColor(name) {
+    var h = 0;
+    var s = String(name || '?');
+    for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; }
+    return AVATAR_COLORS[h % AVATAR_COLORS.length];
+  }
+
+  function bumpActivity() { state.lastActivity = Date.now(); }
+
+  function shake(node) {
+    node.classList.remove('shake');
+    void node.offsetWidth; // force reflow to restart animation
+    node.classList.add('shake');
+    setTimeout(function () { node.classList.remove('shake'); }, 450);
+  }
+
+  /* ============================================================
+     PIN HASHING (SHA-256 when available, fallback otherwise)
+     NOTE: hashing is obfuscation, not encryption. See Privacy Notice.
+     ============================================================ */
+  function fallbackHash(str) {
+    var h1 = 0x811c9dc5 >>> 0, h2 = 0xcbf29ce4 >>> 0;
+    for (var i = 0; i < str.length; i++) {
+      h1 = Math.imul(h1 ^ str.charCodeAt(i), 16777619) >>> 0;
+      h2 = Math.imul(h2 ^ str.charCodeAt(i), 2246822519) >>> 0;
+    }
+    return ('00000000' + h1.toString(16)).slice(-8) + ('00000000' + h2.toString(16)).slice(-8);
+  }
+
+  function hashPin(pin) {
+    var salted = 'EL5AL-PASS::' + pin;
+    if (window.crypto && window.crypto.subtle && window.crypto.subtle.digest) {
+      return window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(salted))
+        .then(function (buf) {
+          var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
+            return ('0' + b.toString(16)).slice(-2);
+          }).join('');
+          return 'sha256:' + hex;
+        })
+        .catch(function () { return 'fnv:' + fallbackHash(salted); });
+    }
+    return Promise.resolve('fnv:' + fallbackHash(salted));
+  }
+
+  function getStoredPinHash() { return localStorage.getItem(K.pinHash); }
+  function setStoredPinHash(hash) { localStorage.setItem(K.pinHash, hash); }
+
+  /* ============================================================
+     STORAGE
+     ============================================================ */
+  function normalizeAccount(a) {
+    a = (a && typeof a === 'object') ? a : {};
+    return {
+      id: (typeof a.id === 'string' && a.id) ? a.id : uid(),
+      name: String(a.name == null ? '' : a.name).slice(0, 80) || 'Untitled',
+      username: String(a.username == null ? '' : a.username).slice(0, 160),
+      password: String(a.password == null ? '' : a.password).slice(0, 300),
+      image: (typeof a.image === 'string' && a.image.indexOf('data:image') === 0) ? a.image : null,
+      notes: String(a.notes == null ? '' : a.notes).slice(0, 2000),
+      createdAt: Number(a.createdAt) || Date.now(),
+      updatedAt: Number(a.updatedAt) || Date.now()
+    };
+  }
+
+  function loadAll() {
+    try {
+      var raw = localStorage.getItem(K.accounts);
+      var parsed = raw ? JSON.parse(raw) : [];
+      state.accounts = Array.isArray(parsed) ? parsed.map(normalizeAccount) : [];
+    } catch (e) { state.accounts = []; }
+
+    try {
+      var s = localStorage.getItem(K.settings);
+      if (s) state.settings = Object.assign({}, DEFAULT_SETTINGS, JSON.parse(s) || {});
+    } catch (e) { /* keep defaults */ }
+
+    if (['grid', 'list'].indexOf(state.settings.view) === -1) state.settings.view = 'grid';
+    state.settings.idleMinutes = [1, 2, 5, 15, 30].indexOf(Number(state.settings.idleMinutes)) === -1
+      ? 5 : Number(state.settings.idleMinutes);
+  }
+
+  function saveSettings() {
+    try { localStorage.setItem(K.settings, JSON.stringify(state.settings)); } catch (e) {}
+  }
+
+  /* Commit a new accounts array: writes to storage first, then to memory.
+     Prevents memory/storage mismatch when quota is exceeded. */
+  function commit(nextAccounts) {
+    try {
+      localStorage.setItem(K.accounts, JSON.stringify(nextAccounts));
+      state.accounts = nextAccounts;
+      return true;
+    } catch (e) {
+      toast('Storage is full. Remove an account or use a smaller image.', 'error');
+      return false;
+    }
+  }
+
+  /* ============================================================
+     TOASTS
+     ============================================================ */
+  function toast(message, type) {
+    type = type || 'success';
+    var node = document.createElement('div');
+    node.className = 'toast ' + type;
+    var iconHtml = type === 'error' ? icons.x : (type === 'info' ? icons.info : icons.check);
+    node.innerHTML = '<span class="toast-icon">' + iconHtml + '</span><span class="toast-msg"></span>';
+    node.querySelector('.toast-msg').textContent = message;
+    el.toastContainer.appendChild(node);
+    requestAnimationFrame(function () { node.classList.add('show'); });
+    setTimeout(function () {
+      node.classList.remove('show');
+      setTimeout(function () { if (node.parentNode) node.parentNode.removeChild(node); }, 300);
+    }, 2800);
+  }
+
+  /* ============================================================
+     CONFIRM DIALOG (promise based)
+     ============================================================ */
+  function confirmDialog(opts) {
+    return new Promise(function (resolve) {
+      confirmResolver = resolve;
+      el.confirmTitle.textContent = opts.title || 'Are you sure?';
+      el.confirmMessage.textContent = opts.message || '';
+      el.confirmOkBtn.textContent = opts.confirmText || 'Confirm';
+      el.confirmOkBtn.className = 'btn ' + (opts.danger ? 'btn-danger' : 'btn-primary');
+      el.confirmModal.classList.remove('hidden');
+    });
+  }
+
+  function closeConfirm(result) {
+    el.confirmModal.classList.add('hidden');
+    if (confirmResolver) {
+      var resolve = confirmResolver;
+      confirmResolver = null;
+      resolve(result);
+    }
+  }
+
+  /* ============================================================
+     CLIPBOARD
+     ============================================================ */
+  function copyText(text, label) {
+    function done() { toast(label + ' copied to clipboard'); }
+    function fail() { toast('Could not copy ' + label.toLowerCase(), 'error'); }
+
+    if (!text) { toast('Nothing to copy — this field is empty', 'info'); return; }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { legacyCopy(text) ? done() : fail(); });
+    } else {
+      legacyCopy(text) ? done() : fail();
+    }
+  }
+
+  function legacyCopy(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  /* ============================================================
+     RENDER
+     ============================================================ */
+  function createCard(a) {
+    var revealed = state.revealed.has(a.id);
+    var passText = revealed ? (escapeHtml(a.password) || '<span class="no-val">empty</span>') : '&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;';
+    var initial = escapeHtml((a.name.trim().charAt(0) || '?').toUpperCase());
+    var color = avatarColor(a.name);
+    var avatar = a.image
+      ? '<img src="' + a.image + '" alt="" />'
+      : '<span style="color:' + color + ';background:' + color + '1f">' + initial + '</span>';
+    var username = a.username
+      ? escapeHtml(a.username)
+      : '<span class="no-val">no username</span>';
+
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.id = a.id;
+    card.innerHTML =
+      '<div class="card-head">' +
+        '<div class="avatar">' + avatar + '</div>' +
+        '<div class="card-title">' +
+          '<h3>' + escapeHtml(a.name) + '</h3>' +
+          '<p class="uname">' + username + '</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="pass-row">' +
+        '<span class="pass-text">' + passText + '</span>' +
+        '<button type="button" class="icon-btn" data-action="toggle" title="' + (revealed ? 'Hide password' : 'Show password') + '" aria-label="Toggle password visibility">' + (revealed ? icons.eyeOff : icons.eye) + '</button>' +
+      '</div>' +
+      (a.notes ? '<div class="notes">' + escapeHtml(a.notes) + '</div>' : '') +
+      '<div class="card-actions">' +
+        '<button type="button" class="act" data-action="copy-user">' + icons.user + '<span>Copy Username</span></button>' +
+        '<button type="button" class="act" data-action="copy-pass">' + icons.copy + '<span>Copy Password</span></button>' +
+        '<button type="button" class="act" data-action="edit">' + icons.edit + '<span>Edit</span></button>' +
+        '<button type="button" class="act danger" data-action="delete">' + icons.trash + '<span>Delete</span></button>' +
+      '</div>';
+    return card;
+  }
+
+  function render() {
+    var q = el.searchInput.value.trim().toLowerCase();
+    var list = state.accounts.slice();
+
+    if (q) {
+      list = list.filter(function (a) {
+        return (a.name + ' ' + a.username + ' ' + a.notes).toLowerCase().indexOf(q) !== -1;
+      });
+    }
+    list.sort(function (a, b) { return a.name.localeCompare(b.name); });
+
+    el.totalCount.textContent = state.accounts.length;
+
+    if (state.accounts.length === 0) {
+      el.resultInfo.textContent = '';
+    } else if (q) {
+      el.resultInfo.textContent = list.length + ' of ' + state.accounts.length + ' accounts match “' + el.searchInput.value.trim() + '”';
+    } else {
+      el.resultInfo.textContent = 'Sorted A–Z · ' + state.accounts.length + ' saved';
+    }
+
+    el.accountsContainer.innerHTML = '';
+
+    if (list.length === 0) {
+      el.accountsContainer.classList.add('hidden');
+      el.emptyState.classList.remove('hidden');
+      if (state.accounts.length === 0) {
+        el.emptyTitle.textContent = 'No accounts yet';
+        el.emptyText.textContent = 'Tap “Add New Account” to store your first login.';
+        el.emptyAddBtn.classList.remove('hidden');
+      } else {
+        el.emptyTitle.textContent = 'No matches found';
+        el.emptyText.textContent = 'Nothing matches your search. Try a different keyword.';
+        el.emptyAddBtn.classList.add('hidden');
+      }
+    } else {
+      el.emptyState.classList.add('hidden');
+      el.accountsContainer.classList.remove('hidden');
+      var frag = document.createDocumentFragment();
+      list.forEach(function (a) { frag.appendChild(createCard(a)); });
+      el.accountsContainer.appendChild(frag);
+    }
+  }
+
+  /* ============================================================
+     PASSWORD VISIBILITY
+     ============================================================ */
+  function toggleReveal(id) {
+    if (state.revealed.has(id)) {
+      state.revealed.delete(id);
+    } else {
+      state.revealed.add(id);
+    }
+    clearTimeout(revealTimer);
+    if (state.revealed.size > 0) {
+      revealTimer = setTimeout(hideAllPasswords, REVEAL_TIMEOUT);
+    }
+    render();
+  }
+
+  function hideAllPasswords() {
+    clearTimeout(revealTimer);
+    if (state.revealed.size === 0) {
+      toast('No passwords are currently visible', 'info');
+      return;
+    }
+    state.revealed.clear();
+    render();
+    toast('All passwords hidden', 'info');
+  }
+
+  /* ============================================================
+     ACCOUNT CRUD
+     ============================================================ */
+  function handleDelete(id) {
+    var acc = null;
+    state.accounts.forEach(function (a) { if (a.id === id) acc = a; });
+    if (!acc) return;
+
+    confirmDialog({
+      title: 'Delete account?',
+      message: '“' + acc.name + '” will be permanently removed from this device. This action cannot be undone.',
+      confirmText: 'Delete',
+      danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      var next = state.accounts.filter(function (a) { return a.id !== id; });
+      if (commit(next)) {
+        state.revealed.delete(id);
+        render();
+        toast('Account deleted');
+      }
+    });
+  }
+
+  /* ============================================================
+     ADD / EDIT MODAL
+     ============================================================ */
+  function openModal(id) {
+    state.editingId = id || null;
+    var acc = null;
+    if (id) {
+      state.accounts.forEach(function (a) { if (a.id === id) acc = a; });
+    }
+
+    el.modalTitle.textContent = acc ? 'Edit Account' : 'Add New Account';
+    el.modalSub.textContent = acc ? 'Update the details below' : 'Saved locally on this device only';
+
+    el.nameInput.value = acc ? acc.name : '';
+    el.usernameInput.value = acc ? acc.username : '';
+    el.passwordInput.value = acc ? acc.password : '';
+    el.notesInput.value = acc ? acc.notes : '';
+    el.passwordInput.type = 'password';
+    el.toggleModalPass.innerHTML = icons.eye;
+
+    el.nameInput.classList.remove('bad');
+    el.nameError.classList.remove('show');
+
+    state.pendingImage = acc ? (acc.image || null) : null;
+    updateImagePreview();
+
+    el.accountModal.classList.remove('hidden');
+    setTimeout(function () { el.nameInput.focus(); }, 80);
+  }
+
+  function closeModal() {
+    el.accountModal.classList.add('hidden');
+    el.accountForm.reset();
+    state.editingId = null;
+    state.pendingImage = null;
+    el.nameInput.classList.remove('bad');
+    el.nameError.classList.remove('show');
+    el.passwordInput.type = 'password';
+    el.toggleModalPass.innerHTML = icons.eye;
+    updateImagePreview();
+  }
+
+  function updateImagePreview() {
+    if (state.pendingImage) {
+      el.previewImg.src = state.pendingImage;
+      el.previewImg.classList.remove('hidden');
+      el.imagePlaceholder.classList.add('hidden');
+      el.removeImageBtn.classList.remove('hidden');
+    } else {
+      el.previewImg.removeAttribute('src');
+      el.previewImg.classList.add('hidden');
+      el.imagePlaceholder.classList.remove('hidden');
+      el.removeImageBtn.classList.add('hidden');
+    }
+  }
+
+  function handleSave(event) {
+    event.preventDefault();
+    bumpActivity();
+
+    var name = el.nameInput.value.trim();
+    if (!name) {
+      el.nameInput.classList.add('bad');
+      el.nameError.classList.add('show');
+      el.nameInput.focus();
+      shake(el.nameInput);
+      return;
+    }
+    el.nameInput.classList.remove('bad');
+    el.nameError.classList.remove('show');
+
+    var data = {
+      name: name,
+      username: el.usernameInput.value.trim(),
+      password: el.passwordInput.value,
+      notes: el.notesInput.value.trim(),
+      image: state.pendingImage
+    };
+
+    if (state.editingId) {
+      var id = state.editingId;
+      var next = state.accounts.map(function (a) {
+        return a.id === id ? normalizeAccount(Object.assign({}, a, data, { updatedAt: Date.now() })) : a;
+      });
+      if (commit(next)) {
+        state.revealed.delete(id);
+        render();
+        closeModal();
+        toast('Account updated');
+      }
+    } else {
+      var account = normalizeAccount(Object.assign({}, data, {
+        id: uid(), createdAt: Date.now(), updatedAt: Date.now()
+      }));
+      if (commit(state.accounts.concat([account]))) {
+        render();
+        closeModal();
+        toast('Account added');
+      }
+    }
+  }
+
+  /* Image pick + compression (keeps LocalStorage small) */
+  function processImage(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onerror = function () { reject(new Error('read error')); };
+      reader.onload = function (e) {
+        var img = new Image();
+        img.onerror = function () { reject(new Error('bad image')); };
+        img.onload = function () {
+          var max = 320;
+          var w = img.naturalWidth || max;
+          var h = img.naturalHeight || max;
+          if (w >= h && w > max) { h = Math.round(h * max / w); w = max; }
+          else if (h > w && h > max) { w = Math.round(w * max / h); h = max; }
+          try {
+            var canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.82));
+          } catch (err) { reject(err); }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function handleImagePick() {
+    var file = el.imageInput.files && el.imageInput.files[0];
+    el.imageInput.value = '';
+    if (!file) return;
+    if (file.type.indexOf('image/') !== 0) { toast('Please choose an image file', 'error'); return; }
+    if (file.size > MAX_IMAGE_BYTES) { toast('Image is too large (max 8 MB)', 'error'); return; }
+
+    processImage(file).then(function (dataUrl) {
+      state.pendingImage = dataUrl;
+      updateImagePreview();
+      toast('Image attached', 'info');
+    }).catch(function () {
+      toast('Could not read that image', 'error');
+    });
+  }
+
+  /* ============================================================
+     VIEW TOGGLE
+     ============================================================ */
+  function applyView() {
+    var isList = state.settings.view === 'list';
+    el.accountsContainer.classList.toggle('list', isList);
+    el.viewToggleBtn.innerHTML = isList
+      ? icons.grid
+      : icons.list;
+    el.viewToggleBtn.title = isList ? 'Switch to grid view' : 'Switch to list view';
+  }
+
+  function toggleView() {
+    state.settings.view = state.settings.view === 'grid' ? 'list' : 'grid';
+    saveSettings();
+    applyView();
+  }
+
+  /* ============================================================
+     BACKUP / RESTORE
+     ============================================================ */
+  function exportBackup() {
+    if (state.accounts.length === 0) {
+      toast('Nothing to export yet', 'info');
+      return;
+    }
+    var payload = {
+      app: 'EL5AL PASS',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      accounts: state.accounts
+    };
+    try {
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      var d = new Date();
+      var stamp = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+      a.href = url;
+      a.download = 'el5al-pass-backup-' + stamp + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1200);
+      toast('Backup exported (' + state.accounts.length + ' accounts)');
+    } catch (e) {
+      toast('Export failed', 'error');
+    }
+  }
+
+  function handleImport() {
+    var file = el.importInput.files && el.importInput.files[0];
+    el.importInput.value = '';
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onerror = function () { toast('Could not read that file', 'error'); };
+    reader.onload = function (e) {
+      var parsed;
+      try { parsed = JSON.parse(e.target.result); }
+      catch (err) { toast('Invalid backup file (not valid JSON)', 'error'); return; }
+
+      var arr = Array.isArray(parsed) ? parsed : parsed.accounts;
+      if (!Array.isArray(arr)) { toast('Invalid backup file (no accounts found)', 'error'); return; }
+
+      confirmDialog({
+        title: 'Restore backup?',
+        message: 'This replaces your ' + state.accounts.length + ' current account(s) with the ' + arr.length + ' account(s) from the backup file.',
+        confirmText: 'Restore',
+        danger: true
+      }).then(function (ok) {
+        if (!ok) return;
+        var next = arr.map(normalizeAccount);
+        if (commit(next)) {
+          state.revealed.clear();
+          render();
+          toast('Restored ' + next.length + ' account(s)');
+        }
+      });
+    };
+    reader.readAsText(file);
+  }
+
+  /* ============================================================
+     SETTINGS
+     ============================================================ */
+  function openSettings() {
+    el.lockOnExitToggle.checked = !!state.settings.lockOnExit;
+    el.autoLockToggle.checked = !!state.settings.autoLock;
+    el.idleSelect.value = String(state.settings.idleMinutes);
+    el.oldPinInput.value = '';
+    el.newPinInput.value = '';
+    el.confirmPinInput.value = '';
+    el.pinMsg.textContent = '';
+    el.pinMsg.className = 'msg';
+    el.settingsModal.classList.remove('hidden');
+  }
+
+  function closeSettings() {
+    el.settingsModal.classList.add('hidden');
+  }
+
+  function handleChangePin() {
+    var oldV = el.oldPinInput.value.trim();
+    var newV = el.newPinInput.value.trim();
+    var confV = el.confirmPinInput.value.trim();
+
+    function msg(text, ok) {
+      el.pinMsg.textContent = text;
+      el.pinMsg.className = 'msg ' + (ok ? 'ok' : 'error');
+    }
+
+    if (!oldV) { msg('Enter your current PIN', false); return; }
+    if (!validPin(newV)) { msg('New PIN must be 4–6 digits', false); return; }
+    if (newV !== confV) { msg('New PINs do not match', false); return; }
+
+    hashPin(oldV).then(function (oldHash) {
+      if (oldHash !== getStoredPinHash()) { msg('Current PIN is incorrect', false); return; }
+      return hashPin(newV).then(function (newHash) {
+        setStoredPinHash(newHash);
+        el.oldPinInput.value = '';
+        el.newPinInput.value = '';
+        el.confirmPinInput.value = '';
+        msg('Master PIN updated', true);
+        toast('Master PIN updated');
+      });
+    });
+  }
+
+  function handleClearData() {
+    confirmDialog({
+      title: 'Delete all data?',
+      message: 'Every account and your Master PIN will be permanently erased from this device. Export a backup first if you might need it.',
+      confirmText: 'Delete Everything',
+      danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      try {
+        localStorage.removeItem(K.accounts);
+        localStorage.removeItem(K.pinHash);
+        localStorage.removeItem(K.settings);
+      } catch (e) {}
+      state.accounts = [];
+      state.settings = Object.assign({}, DEFAULT_SETTINGS);
+      state.revealed.clear();
+      state.unlocked = false;
+      clearTimeout(revealTimer);
+      closeSettings();
+      closeModal();
+      applySettingsToUI();
+      render();
+      showSetup();
+      toast('All data deleted', 'info');
+    });
+  }
+
+  function applySettingsToUI() {
+    el.lockOnExitToggle.checked = !!state.settings.lockOnExit;
+    el.autoLockToggle.checked = !!state.settings.autoLock;
+    el.idleSelect.value = String(state.settings.idleMinutes);
+    applyView();
+  }
+
+  /* ============================================================
+     LOCK / UNLOCK FLOW
+     ============================================================ */
+  function hideAllOverlays() {
+    if (!el.confirmModal.classList.contains('hidden')) closeConfirm(false);
+    el.accountModal.classList.add('hidden');
+    el.settingsModal.classList.add('hidden');
+  }
+
+  function showSetup() {
+    state.unlocked = false;
+    hideAllOverlays();
+    el.mainApp.classList.add('hidden');
+    el.lockScreen.classList.add('hidden');
+    el.setupScreen.classList.remove('hidden');
+    el.setupPinInput.value = '';
+    el.setupPinConfirmInput.value = '';
+    el.setupError.textContent = '';
+    setTimeout(function () { el.setupPinInput.focus(); }, 80);
+  }
+
+  function showLock(reason) {
+    state.unlocked = false;
+    hideAllOverlays();
+    el.mainApp.classList.add('hidden');
+    el.setupScreen.classList.add('hidden');
+    el.lockScreen.classList.remove('hidden');
+    el.lockReason.textContent = reason || '';
+    el.lockError.textContent = '';
+    el.pinInput.value = '';
+    setTimeout(function () { el.pinInput.focus(); }, 80);
+  }
+
+  function lock(reason) {
+    state.revealed.clear();
+    clearTimeout(revealTimer);
+    if (getStoredPinHash()) showLock(reason);
+    else showSetup();
+  }
+
+  function enterApp() {
+    state.unlocked = true;
+    el.lockScreen.classList.add('hidden');
+    el.setupScreen.classList.add('hidden');
+    el.mainApp.classList.remove('hidden');
+    applyView();
+    render();
+    bumpActivity();
+  }
+
+  function handleSetupPin(event) {
+    event.preventDefault();
+    var p1 = el.setupPinInput.value.trim();
+    var p2 = el.setupPinConfirmInput.value.trim();
+
+    if (!validPin(p1)) {
+      el.setupError.textContent = 'PIN must be 4–6 digits';
+      shake(el.setupCard);
+      return;
+    }
+    if (p1 !== p2) {
+      el.setupError.textContent = 'PINs do not match';
+      shake(el.setupCard);
+      return;
+    }
+    el.setupBtn.disabled = true;
+    hashPin(p1).then(function (hash) {
+      setStoredPinHash(hash);
+      el.setupBtn.disabled = false;
+      el.setupError.textContent = '';
+      toast('Master PIN created — welcome!');
+      enterApp();
+    });
+  }
+
+  function handleUnlock(event) {
+    event.preventDefault();
+    var val = el.pinInput.value.trim();
+    if (!val) {
+      el.lockError.textContent = 'Enter your PIN';
+      return;
+    }
+    el.unlockBtn.disabled = true;
+    el.unlockBtn.textContent = 'Unlocking…';
+    hashPin(val).then(function (hash) {
+      el.unlockBtn.disabled = false;
+      el.unlockBtn.innerHTML = icons.unlock + '<span>Unlock</span>';
+      if (hash === getStoredPinHash()) {
+        el.lockError.textContent = '';
+        enterApp();
+      } else {
+        el.lockError.textContent = 'Incorrect PIN — try again';
+        el.pinInput.value = '';
+        el.pinInput.focus();
+        shake(el.lockCard);
+      }
+    });
+  }
+
+  /* ============================================================
+     AUTO LOCK
+     ============================================================ */
+  function startTicker() {
+    ['pointerdown', 'keydown', 'touchstart', 'wheel', 'input'].forEach(function (evt) {
+      window.addEventListener(evt, bumpActivity, { passive: true });
+    });
+
+    setInterval(function () {
+      el.lockClock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (!state.unlocked) return;
+      if (state.settings.autoLock && Date.now() - state.lastActivity > state.settings.idleMinutes * 60000) {
+        lock('Locked automatically after ' + state.settings.idleMinutes + ' min of inactivity');
+      }
+    }, 1000);
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden' && state.unlocked && state.settings.lockOnExit) {
+        lock('Locked when the app went to background');
+      }
+    });
+  }
+
+  /* ============================================================
+     EVENT BINDINGS
+     ============================================================ */
+  function digitsOnly(e) {
+    e.target.value = e.target.value.replace(/\D/g, '');
+  }
+
+  function bindEvents() {
+    /* Auth */
+    el.setupForm.addEventListener('submit', handleSetupPin);
+    el.unlockForm.addEventListener('submit', handleUnlock);
+    [el.pinInput, el.setupPinInput, el.setupPinConfirmInput, el.oldPinInput, el.newPinInput, el.confirmPinInput]
+      .forEach(function (input) { input.addEventListener('input', digitsOnly); });
+
+    /* Top bar */
+    el.lockBtn.addEventListener('click', function () { lock('Locked manually'); });
+    el.settingsBtn.addEventListener('click', openSettings);
+
+    /* Main actions */
+    el.addBtn.addEventListener('click', function () { openModal(null); });
+    el.emptyAddBtn.addEventListener('click', function () { openModal(null); });
+    el.searchInput.addEventListener('input', render);
+    el.viewToggleBtn.addEventListener('click', toggleView);
+    el.hideAllBtn.addEventListener('click', hideAllPasswords);
+
+    /* Card actions (event delegation) */
+    el.accountsContainer.addEventListener('click', function (e) {
+      var card = e.target.closest('.card');
+      if (!card) return;
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      var id = card.dataset.id;
+      var acc = null;
+      state.accounts.forEach(function (a) { if (a.id === id) acc = a; });
+      if (!acc) return;
+
+      var action = btn.dataset.action;
+      if (action === 'toggle') toggleReveal(id);
+      else if (action === 'copy-user') copyText(acc.username, 'Username');
+      else if (action === 'copy-pass') copyText(acc.password, 'Password');
+      else if (action === 'edit') openModal(id);
+      else if (action === 'delete') handleDelete(id);
+    });
+
+    /* Account modal */
+    el.accountForm.addEventListener('submit', handleSave);
+    el.closeModalBtn.addEventListener('click', closeModal);
+    el.cancelModalBtn.addEventListener('click', closeModal);
+    el.accountModal.addEventListener('click', function (e) {
+      if (e.target === el.accountModal) closeModal();
+    });
+    el.toggleModalPass.addEventListener('click', function () {
+      var show = el.passwordInput.type === 'password';
+      el.passwordInput.type = show ? 'text' : 'password';
+      el.toggleModalPass.innerHTML = show ? icons.eyeOff : icons.eye;
+      el.toggleModalPass.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    });
+    el.pickImageBtn.addEventListener('click', function () { el.imageInput.click(); });
+    el.removeImageBtn.addEventListener('click', function () {
+      state.pendingImage = null;
+      updateImagePreview();
+    });
+    el.imageInput.addEventListener('change', handleImagePick);
+
+    /* Settings modal */
+    el.closeSettingsBtn.addEventListener('click', closeSettings);
+    el.settingsModal.addEventListener('click', function (e) {
+      if (e.target === el.settingsModal) closeSettings();
+    });
+    el.changePinBtn.addEventListener('click', handleChangePin);
+    el.lockOnExitToggle.addEventListener('change', function () {
+      state.settings.lockOnExit = el.lockOnExitToggle.checked;
+      saveSettings();
+      toast(el.lockOnExitToggle.checked ? 'Will lock on background' : 'Background lock disabled', 'info');
+    });
+    el.autoLockToggle.addEventListener('change', function () {
+      state.settings.autoLock = el.autoLockToggle.checked;
+      saveSettings();
+      bumpActivity();
+      toast(el.autoLockToggle.checked ? 'Idle auto-lock enabled' : 'Idle auto-lock disabled', 'info');
+    });
+    el.idleSelect.addEventListener('change', function () {
+      state.settings.idleMinutes = parseInt(el.idleSelect.value, 10) || 5;
+      saveSettings();
+      bumpActivity();
+      toast('Idle timeout set to ' + state.settings.idleMinutes + ' min', 'info');
+    });
+    el.exportBtn.addEventListener('click', exportBackup);
+    el.importBtn.addEventListener('click', function () { el.importInput.click(); });
+    el.importInput.addEventListener('change', handleImport);
+    el.clearDataBtn.addEventListener('click', handleClearData);
+
+    /* Confirm dialog */
+    el.confirmOkBtn.addEventListener('click', function () { closeConfirm(true); });
+    el.confirmCancelBtn.addEventListener('click', function () { closeConfirm(false); });
+    el.confirmModal.addEventListener('click', function (e) {
+      if (e.target === el.confirmModal) closeConfirm(false);
+    });
+
+    /* Escape closes the top-most open layer */
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (!el.confirmModal.classList.contains('hidden')) closeConfirm(false);
+      else if (!el.settingsModal.classList.contains('hidden')) closeSettings();
+      else if (!el.accountModal.classList.contains('hidden')) closeModal();
+    });
+  }
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  function init() {
+    loadAll();
+    applySettingsToUI();
+    bindEvents();
+    startTicker();
+    if (getStoredPinHash()) showLock('');
+    else showSetup();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
