@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0E0D08">
+  <meta name="description" content="EL5AL PASS - مساحة محلية مشفرة لحفظ الحسابات وتنظيمها.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>EL5AL PASS | حساباتك في مكانها الصحيح</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0E0D08;
+      --sidebar: #12130e;
+      --surface: #191b13;
+      --surface-raised: #20231a;
+      --surface-soft: #15170f;
+      --line: #2c3023;
+      --line-soft: #24271e;
+      --accent: #A3E635;
+      --accent-dark: #1e3010;
+      --text: #f3f5ed;
+      --muted: #9b9f92;
+      --dim: #858b7e;
+      --danger: #ef8e84;
+      --shadow: 0 18px 55px rgba(0, 0, 0, .19);
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+    body, button, input, select, textarea { font-family: "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif; }
+    button, input, select, textarea { font-size: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .58; }
+    button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+    ::selection { color: #101409; background: var(--accent); }
+    ::-webkit-scrollbar { width: 9px; height: 9px; }
+    ::-webkit-scrollbar-thumb { background: #353b2b; border: 2px solid var(--bg); border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    .icon { display: inline-block; flex: none; vertical-align: middle; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+    .app-shell { display: grid; grid-template-columns: 258px minmax(0, 1fr); min-height: 100vh; min-height: 100dvh; }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      padding: 34px 19px 25px;
+      background: var(--sidebar);
+      border-inline-end: 1px solid var(--line-soft);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 12px; color: var(--text); text-decoration: none; direction: ltr; }
+    .brand-mark { display: grid; flex: none; place-items: center; width: 39px; height: 39px; color: #101409; background: var(--accent); border-radius: 12px; box-shadow: 0 6px 22px rgba(163, 230, 53, .13); }
+    .brand-name { font-family: Arial, sans-serif; font-size: 20px; font-weight: 800; line-height: 1; letter-spacing: -.065em; white-space: nowrap; }
+    .brand-name span { color: var(--accent); }
+    .brand-caption { display: block; margin-top: 5px; color: var(--dim); font-size: 10px; font-weight: 500; letter-spacing: 0; text-align: left; direction: rtl; }
+    .sidebar .brand { margin: 1px 10px 46px 0; }
+    .side-label { margin: 0 15px 13px; color: var(--dim); font-size: 11px; font-weight: 700; }
+    .side-nav { display: grid; gap: 5px; }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 45px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      text-align: right;
+      font-weight: 600;
+      transition: background .2s ease, color .2s ease, border-color .2s ease;
+    }
+    .nav-link:hover { color: var(--text); background: #1c2016; }
+    .nav-link.active { color: var(--accent); background: #222b19; border-color: #334126; }
+    .nav-link .icon { opacity: .84; }
+    .side-bottom { margin-top: auto; padding-top: 18px; border-top: 1px solid var(--line-soft); }
+    .side-bottom .nav-link { margin-bottom: 17px; }
+    .side-security { display: flex; align-items: flex-start; gap: 10px; padding: 0 12px; color: var(--dim); font-size: 11px; line-height: 1.7; }
+    .side-security .icon { color: var(--accent); margin-top: 2px; }
+    .side-security strong { display: block; color: #bdc8ab; font-size: 11px; font-weight: 600; }
+
+    .workspace { min-width: 0; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      max-width: 1260px;
+      min-height: 95px;
+      margin: 0 auto;
+      padding: 25px 48px 16px;
+    }
+    .topbar-label { color: var(--dim); font-size: 11px; margin-bottom: 5px; }
+    .topbar-title { color: #e5e9dc; font-size: 14px; font-weight: 700; }
+    .topbar-tools { display: flex; align-items: center; gap: 12px; }
+    .search-box { position: relative; display: flex; align-items: center; width: min(310px, 34vw); }
+    .search-box .icon { position: absolute; inset-inline-start: 15px; color: var(--dim); pointer-events: none; }
+    .search-box input {
+      width: 100%; height: 43px;
+      padding: 0 43px 0 15px;
+      padding-inline-start: 43px;
+      padding-inline-end: 15px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #181a13;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s ease, background .2s ease;
+    }
+    .search-box input::placeholder { color: #777e70; }
+    .search-box input:focus { border-color: #667f3b; background: #1d2117; }
+    .top-lock, .mobile-brand { display: none; }
+    .page { max-width: 1260px; margin: 0 auto; padding: 0 48px 90px; animation: pageIn .34s ease both; }
+
+    .eyebrow { display: flex; align-items: center; gap: 10px; margin: 0; color: var(--accent); font-size: 12px; font-weight: 700; }
+    .eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(163,230,53,.11); }
+    .welcome { position: relative; display: flex; min-height: 332px; align-items: center; overflow: hidden; isolation: isolate; }
+    .welcome-copy { position: relative; z-index: 1; padding: 14px 0 28px; animation: rise .52s ease both; }
+    .hero-brand {
+      margin: 19px 0 9px;
+      direction: ltr;
+      text-align: right;
+      font-family: Arial, sans-serif;
+      font-size: clamp(48px, 6.3vw, 86px);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -.082em;
+      white-space: nowrap;
+    }
+    .hero-brand span { color: var(--accent); }
+    .welcome h2 { margin: 0 0 8px; font-size: clamp(20px, 2.2vw, 29px); font-weight: 700; letter-spacing: -.025em; }
+    .welcome-description { max-width: 495px; margin: 0 0 24px; color: var(--muted); font-size: 13px; line-height: 1.9; }
+    .hero-graphic { position: absolute; left: 5%; top: 6%; z-index: 0; width: min(37vw, 405px); max-height: 360px; color: var(--accent); opacity: .15; pointer-events: none; animation: graphicFloat 8s ease-in-out infinite; }
+    .hero-graphic svg { display: block; width: 100%; height: auto; }
+    .button-primary, .button-secondary, .button-danger, .text-button, .button-quiet {
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      min-height: 43px; padding: 0 17px; border-radius: 10px;
+      font-weight: 700; text-decoration: none;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
+    }
+    .button-primary { color: #101608; background: var(--accent); border: 1px solid var(--accent); box-shadow: 0 9px 24px rgba(163,230,53,.1); }
+    .button-primary:hover:not(:disabled) { background: #b6f254; border-color: #b6f254; transform: translateY(-2px); }
+    .button-secondary { color: var(--text); background: #22251c; border: 1px solid #353b2c; }
+    .button-secondary:hover:not(:disabled) { background: #2b3023; border-color: #536341; transform: translateY(-1px); }
+    .button-danger { color: #250f0d; background: var(--danger); border: 1px solid var(--danger); }
+    .button-danger:hover:not(:disabled) { background: #f6a59b; transform: translateY(-1px); }
+    .button-quiet { color: var(--muted); background: transparent; border: 1px solid var(--line); }
+    .button-quiet:hover:not(:disabled) { color: var(--text); border-color: #596149; }
+    .text-button { min-height: 36px; padding: 0; border: 0; background: none; color: var(--accent); font-size: 12px; }
+    .text-button:hover { color: #c2f276; }
+    .icon-button { display: inline-grid; flex: none; place-items: center; width: 35px; height: 35px; padding: 0; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--muted); transition: background .18s ease, color .18s ease, border-color .18s ease; }
+    .icon-button:hover { color: var(--text); background: #30352a; border-color: #3a4232; }
+    .icon-button.danger:hover { color: #ffc4bd; background: #3c2421; border-color: #5a3531; }
+    .icon-button.active { color: var(--accent); }
+
+    .counts { display: flex; gap: 58px; padding: 25px 0 27px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .count { display: flex; align-items: baseline; gap: 14px; }
+    .count strong { color: var(--text); font-family: Arial, Tahoma, sans-serif; font-size: 31px; font-weight: 750; line-height: 1; font-variant-numeric: tabular-nums; }
+    .count:first-child strong { color: var(--accent); }
+    .count span { color: var(--muted); font-size: 12px; }
+    .section { margin-top: 43px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 20px; }
+    .section-heading h2 { margin: 0; font-size: 20px; font-weight: 750; letter-spacing: -.025em; }
+    .section-heading p { margin: 6px 0 0; color: var(--dim); font-size: 12px; line-height: 1.7; }
+    .section-action { flex: none; }
+    .collection-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .collection-item { display: flex; align-items: center; min-width: 0; min-height: 79px; border: 1px solid var(--line); border-radius: 13px; background: #191b14; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+    .collection-item:hover { border-color: #485638; background: #20241a; transform: translateY(-2px); }
+    .collection-open { display: flex; flex: 1; min-width: 0; align-items: center; gap: 13px; height: 100%; min-height: 77px; padding: 12px 16px; border: 0; background: transparent; color: var(--text); text-align: right; }
+    .collection-symbol { display: grid; flex: none; place-items: center; width: 43px; height: 43px; border-radius: 11px; background: #27301e; background: color-mix(in srgb, var(--group-color) 13%, transparent); color: var(--group-color); }
+    .collection-copy { flex: 1; min-width: 0; }
+    .collection-copy strong { display: block; overflow: hidden; color: var(--text); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .collection-copy small { display: block; margin-top: 6px; color: var(--muted); font-size: 11px; }
+    .collection-arrow { color: var(--dim); }
+    .collection-controls { display: flex; align-items: center; gap: 1px; padding-inline-end: 11px; }
+    .collection-controls .icon-button { width: 32px; height: 32px; }
+
+    .account-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .account-card { min-width: 0; padding: 18px 18px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); transition: background .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease; cursor: pointer; }
+    .account-card:hover { background: #1d2117; border-color: #465535; transform: translateY(-2px); box-shadow: var(--shadow); }
+    .account-card-top { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .account-card-open { width: 100%; padding: 0; border: 0; background: transparent; color: inherit; text-align: right; }
+    .avatar { display: grid; flex: none; place-items: center; width: 45px; height: 45px; overflow: hidden; border: 1px solid #3b4b29; border-radius: 12px; background: #25311b; color: var(--accent); }
+    .avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .avatar.large { width: 69px; height: 69px; border-radius: 17px; }
+    .avatar.preview { width: 56px; height: 56px; border-radius: 13px; }
+    .account-card-identity { display: block; flex: 1; min-width: 0; }
+    .account-card-name { display: block; overflow: hidden; margin-bottom: 5px; font-size: 14px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .account-card-username { display: block; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; unicode-bidi: plaintext; }
+    .account-card .open-arrow { color: var(--dim); }
+    .secret-row { display: flex; align-items: center; gap: 10px; min-height: 42px; margin-top: 17px; padding: 3px 11px; border: 1px solid #303629; border-radius: 9px; background: #11140e; }
+    .secret-label { flex: none; color: var(--dim); font-size: 10px; }
+    .secret-value { flex: 1; min-width: 0; overflow: hidden; color: #dce1d4; font-family: Arial, Tahoma, sans-serif; font-size: 12px; letter-spacing: 1.6px; text-align: left; text-overflow: ellipsis; white-space: nowrap; unicode-bidi: plaintext; }
+    .secret-value.revealed { letter-spacing: 0; }
+    .secret-row .icon-button { width: 28px; height: 28px; }
+    .card-footer { display: flex; align-items: center; gap: 4px; min-height: 43px; margin-top: 8px; }
+    .card-footer-spacer { flex: 1; }
+    .mini-action { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 8px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 11px; white-space: nowrap; transition: color .2s, background .2s; }
+    .mini-action:hover { color: var(--accent); background: #28311e; }
+    .card-footer .icon-button { width: 31px; height: 31px; }
+
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin: 38px 0 28px; }
+    .page-heading h1 { margin: 0; font-size: clamp(28px, 3vw, 38px); font-weight: 780; line-height: 1.3; letter-spacing: -.04em; }
+    .page-heading p { max-width: 520px; margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.8; }
+    .page-heading-actions { display: flex; gap: 9px; flex: none; }
+    .back-button { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; margin-top: 24px; padding: 0; border: 0; background: transparent; color: var(--muted); font-weight: 600; }
+    .back-button:hover { color: var(--accent); }
+    .group-heading { align-items: center; margin-top: 17px; }
+    .group-title { display: flex; align-items: center; gap: 16px; min-width: 0; }
+    .group-title .collection-symbol { width: 61px; height: 61px; border-radius: 15px; }
+    .group-title h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .results-caption { margin: 0 0 15px; color: var(--dim); font-size: 12px; }
+
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px; padding: 30px 20px; border: 1px dashed #39402e; border-radius: 14px; background: linear-gradient(135deg, #171b12 0%, #11130e 100%); text-align: center; }
+    .empty-icon { display: grid; place-items: center; width: 53px; height: 53px; margin-bottom: 16px; border: 1px solid #3d4f2a; border-radius: 15px; background: #25331b; color: var(--accent); }
+    .empty-state h3 { margin: 0 0 7px; font-size: 16px; }
+    .empty-state p { max-width: 320px; margin: 0 0 17px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+    .empty-state .button-secondary { min-height: 37px; font-size: 12px; }
+
+    .detail-head { display: flex; align-items: center; gap: 16px; margin: 20px 0 30px; padding-bottom: 27px; border-bottom: 1px solid var(--line); }
+    .detail-head h1 { margin: 0 0 7px; font-size: clamp(25px, 3vw, 35px); line-height: 1.25; overflow-wrap: anywhere; }
+    .detail-head p { margin: 0; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; unicode-bidi: plaintext; }
+    .detail-content { max-width: 810px; }
+    .detail-field { padding: 19px 0; border-bottom: 1px solid var(--line); }
+    .detail-field > label, .detail-field > .field-title { display: block; margin-bottom: 10px; color: var(--dim); font-size: 11px; font-weight: 700; }
+    .detail-value { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+    .detail-value strong { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 14px; font-weight: 600; unicode-bidi: plaintext; }
+    .detail-value .masked { color: #dce1d4; font-family: Arial, Tahoma, sans-serif; letter-spacing: 2px; }
+    .detail-value .shown { letter-spacing: 0; }
+    .detail-note { margin: 0; color: #d4d8cf; line-height: 1.9; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .detail-select { width: min(100%, 330px); }
+    .detail-meta { margin-top: 21px; color: var(--dim); font-size: 11px; line-height: 1.9; }
+    .detail-actions { display: flex; gap: 10px; margin-top: 24px; }
+
+    .settings-content { max-width: 780px; }
+    .settings-section { padding: 25px 0 30px; border-top: 1px solid var(--line); }
+    .settings-section h2 { margin: 0 0 8px; font-size: 17px; }
+    .settings-section p { max-width: 650px; margin: 0 0 18px; color: var(--muted); font-size: 12px; line-height: 1.95; }
+    .notice { display: flex; gap: 10px; align-items: flex-start; max-width: 650px; margin: 17px 0 18px; padding: 13px 15px; border: 1px solid #3b472b; border-radius: 10px; background: #1b2414; color: #c9d9b7; font-size: 11px; line-height: 1.85; }
+    .notice .icon { flex: none; margin-top: 2px; color: var(--accent); }
+    .settings-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pin-form { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px; }
+    .pin-form .field { width: 160px; margin: 0; }
+    .pin-form .button-primary { min-height: 44px; }
+    .pin-status { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 16px; color: var(--accent); font-size: 12px; font-weight: 700; }
+
+    .field { display: block; margin-bottom: 16px; }
+    .field > span, .field-label { display: block; margin-bottom: 8px; color: #dce1d3; font-size: 12px; font-weight: 650; }
+    .field .optional { color: var(--dim); font-size: 10px; font-weight: 400; }
+    .input, .textarea, .select {
+      display: block; width: 100%; min-height: 44px;
+      padding: 10px 13px;
+      border: 1px solid #3a4031;
+      border-radius: 9px;
+      background: #12150e;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s ease, background .2s ease;
+    }
+    .input::placeholder, .textarea::placeholder { color: #747b6c; }
+    .input:focus, .textarea:focus, .select:focus { border-color: #779e43; background: #161b11; }
+    .textarea { resize: vertical; min-height: 88px; line-height: 1.8; }
+    .select { appearance: none; padding-inline-end: 36px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%239ba494' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 7 5 5 5-5'/%3E%3C/svg%3E"); background-position: left 12px center; background-repeat: no-repeat; }
+    .input-wrap { position: relative; }
+    .input-wrap .input { padding-inline-end: 46px; }
+    .input-wrap .icon-button { position: absolute; inset-inline-end: 5px; top: 50%; transform: translateY(-50%); }
+    .form-error { min-height: 17px; margin: -4px 0 11px; color: var(--danger); font-size: 11px; }
+
+    .auth-screen { position: relative; display: flex; align-items: center; min-height: 100vh; min-height: 100dvh; overflow: hidden; background: radial-gradient(circle at 22% 72%, rgba(75, 110, 30, .13), transparent 38%), var(--bg); }
+    .auth-screen::before { content: ""; position: absolute; left: -170px; bottom: -280px; width: 680px; height: 680px; border: 1px solid rgba(163,230,53,.08); border-radius: 50%; box-shadow: 0 0 0 85px rgba(163,230,53,.018), 0 0 0 180px rgba(163,230,53,.012); pointer-events: none; }
+    .auth-inner { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(350px, 430px); align-items: center; gap: clamp(45px, 8vw, 130px); width: min(1140px, 100%); margin: auto; padding: 60px 44px; }
+    .auth-branding { position: relative; z-index: 1; }
+    .auth-branding .brand-mark { width: 47px; height: 47px; border-radius: 14px; }
+    .auth-branding .brand-name { font-size: 23px; }
+    .auth-display { margin: 65px 0 16px; font-family: Arial, sans-serif; font-size: clamp(58px, 6.6vw, 100px); font-weight: 900; letter-spacing: -.09em; line-height: .97; direction: ltr; text-align: right; }
+    .auth-display span { color: var(--accent); }
+    .auth-branding h1 { margin: 0 0 11px; font-size: clamp(20px, 2vw, 28px); font-weight: 700; }
+    .auth-branding p { max-width: 390px; margin: 0; color: var(--muted); font-size: 13px; line-height: 2; }
+    .auth-line { width: 75px; height: 3px; margin-top: 30px; border-radius: 3px; background: var(--accent); }
+    .auth-panel { position: relative; z-index: 1; padding: 31px; border: 1px solid #363e2c; border-radius: 18px; background: rgba(25, 28, 19, .96); box-shadow: 0 26px 80px rgba(0,0,0,.27); animation: rise .5s ease both; }
+    .auth-panel-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+    .auth-panel-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 11px; background: #28391c; color: var(--accent); }
+    .auth-panel-kicker { color: var(--accent); font-size: 11px; font-weight: 700; }
+    .auth-panel h2 { margin: 0 0 8px; font-size: 22px; }
+    .auth-panel-description { margin: 0 0 24px; color: var(--muted); font-size: 12px; line-height: 1.9; }
+    .auth-panel .button-primary { width: 100%; margin-top: 4px; }
+    .auth-panel .text-button { display: flex; margin: 16px auto 0; }
+    .auth-footnote { margin: 20px 0 0; padding-top: 16px; border-top: 1px solid var(--line); color: var(--dim); font-size: 11px; line-height: 1.85; }
+    .loading-screen { display: grid; place-items: center; min-height: 100vh; min-height: 100dvh; color: var(--accent); }
+    .loading-screen div { display: grid; gap: 18px; justify-items: center; }
+    .loading-screen p { color: var(--muted); font-size: 12px; }
+    .loading-ring { width: 40px; height: 40px; border: 2px solid #38452a; border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+
+    dialog.dialog { width: min(550px, calc(100% - 28px)); max-height: min(90dvh, 850px); margin: auto; padding: 0; overflow: auto; border: 1px solid #3a4330; border-radius: 17px; background: #1b1e16; color: var(--text); box-shadow: 0 32px 110px rgba(0,0,0,.58); }
+    dialog.dialog[open] { animation: dialogIn .22s ease both; }
+    dialog.dialog::backdrop { background: rgba(4, 6, 3, .79); backdrop-filter: blur(5px); }
+    .modal-inner { padding: 25px; }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 21px; }
+    .modal-header h2 { margin: 0 0 6px; font-size: 20px; }
+    .modal-header p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.7; }
+    .modal-header .icon-button { margin: -5px -5px 0 0; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 9px; margin-top: 23px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .two-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .image-picker { display: flex; align-items: center; gap: 15px; margin-bottom: 18px; }
+    .image-picker-copy { min-width: 0; }
+    .image-picker-copy strong { display: block; margin-bottom: 5px; font-size: 12px; }
+    .image-picker-copy small { display: block; margin: 6px 0 0; color: var(--dim); font-size: 10px; line-height: 1.6; }
+    .image-picker-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .upload-label { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: var(--accent); font-size: 11px; font-weight: 700; cursor: pointer; }
+    .upload-label:hover { color: #c4f47d; }
+    .remove-image { padding: 0; border: 0; background: none; color: var(--muted); font-size: 11px; }
+    .remove-image:hover { color: var(--danger); }
+    .choices-label { display: block; margin: 0 0 9px; color: #dce1d3; font-size: 12px; font-weight: 650; }
+    .icon-choices, .color-choices { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 18px; }
+    .choice { position: relative; display: inline-grid; place-items: center; cursor: pointer; }
+    .choice input { position: absolute; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+    .icon-choices .choice span { display: grid; place-items: center; width: 43px; height: 43px; border: 1px solid #3a4031; border-radius: 10px; background: #131710; color: var(--muted); transition: .18s; }
+    .icon-choices .choice input:checked + span { border-color: var(--accent); background: #26351b; color: var(--accent); }
+    .choice input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .color-choices .choice span { display: grid; place-items: center; width: 33px; height: 33px; border: 2px solid transparent; border-radius: 50%; background: var(--choice-color); background-clip: content-box; padding: 4px; transition: transform .18s, border-color .18s; }
+    .color-choices .choice input:checked + span { border-color: var(--choice-color); transform: scale(1.08); }
+    .confirm-copy { margin: 0; color: #d0d6c9; font-size: 13px; line-height: 1.95; overflow-wrap: anywhere; }
+    .confirm-copy strong { color: var(--text); }
+    .confirm-warning { margin: 13px 0 0; color: var(--danger); font-size: 12px; line-height: 1.8; }
+
+    .toast { position: fixed; bottom: 27px; left: 27px; z-index: 100; display: flex; align-items: center; gap: 10px; max-width: min(390px, calc(100% - 30px)); padding: 12px 16px; border: 1px solid #516c34; border-radius: 11px; background: #26351c; color: #e8f5da; box-shadow: 0 14px 45px rgba(0,0,0,.35); font-size: 12px; line-height: 1.6; animation: toastIn .24s ease both; }
+    .toast.error { border-color: #75504c; background: #3b2522; color: #ffe0da; }
+    .toast[hidden] { display: none; }
+    .mobile-nav { display: none; }
+
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes graphicFloat { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-12px) rotate(0deg); } }
+    @keyframes dialogIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 1120px) {
+      .app-shell { grid-template-columns: 220px minmax(0, 1fr); }
+      .sidebar { padding-inline: 13px; }
+      .topbar { padding-inline: 30px; }
+      .page { padding-inline: 30px; }
+      .hero-graphic { left: 0; opacity: .1; }
+      .mini-action { padding-inline: 5px; }
+    }
+    @media (max-width: 870px) {
+      .app-shell { display: block; }
+      .sidebar { display: none; }
+      .topbar { min-height: 81px; padding: 19px 24px 12px; }
+      .page { padding: 0 24px 104px; }
+      .mobile-brand { display: inline-flex; }
+      .mobile-brand .brand-mark { width: 34px; height: 34px; border-radius: 10px; }
+      .mobile-brand .brand-name { font-size: 18px; }
+      .topbar-meta { display: none; }
+      .top-lock { display: inline-grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 10px; background: #1b1d15; color: var(--muted); }
+      .top-lock:hover { color: var(--accent); }
+      .search-box { width: min(310px, 39vw); }
+      .mobile-nav { position: fixed; inset-inline: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(4, 1fr); min-height: 68px; padding: 6px 9px calc(6px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(18, 20, 14, .97); backdrop-filter: blur(16px); }
+      .mobile-nav button { display: grid; justify-items: center; align-content: center; gap: 5px; padding: 3px; border: 0; border-radius: 9px; background: none; color: var(--dim); font-size: 10px; font-weight: 650; }
+      .mobile-nav button.active { color: var(--accent); }
+      .mobile-nav button:hover { color: var(--text); }
+      .auth-inner { gap: 32px; padding-inline: 30px; }
+      .auth-display { font-size: 60px; }
+    }
+    @media (max-width: 640px) {
+      .topbar { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 17px 18px 12px; }
+      .topbar-tools { display: contents; }
+      .top-lock { grid-column: 2; grid-row: 1; }
+      .search-box { grid-column: 1 / -1; grid-row: 2; width: 100%; }
+      .topbar.no-search { display: flex; }
+      .topbar.no-search .topbar-tools { display: flex; }
+      .page { padding: 0 18px 105px; }
+      .welcome { min-height: 303px; }
+      .welcome-copy { padding: 18px 0 27px; }
+      .hero-brand { margin-top: 17px; font-size: clamp(45px, 10.5vw, 65px); }
+      .welcome h2 { font-size: 22px; }
+      .welcome-description { max-width: 310px; font-size: 12px; }
+      .hero-graphic { left: -70px; top: 26px; width: 280px; opacity: .065; }
+      .counts { gap: 35px; padding: 21px 0; }
+      .count { display: block; }
+      .count strong { display: block; margin-bottom: 7px; font-size: 28px; }
+      .section { margin-top: 34px; }
+      .section-heading h2 { font-size: 18px; }
+      .collection-grid, .account-grid { grid-template-columns: 1fr; }
+      .collection-item { min-height: 73px; }
+      .collection-open { min-height: 71px; }
+      .page-heading { align-items: flex-start; margin: 24px 0 23px; }
+      .page-heading h1 { font-size: 28px; }
+      .page-heading p { font-size: 12px; }
+      .page-heading-actions { flex-wrap: wrap; justify-content: flex-end; }
+      .page-heading-actions .button-secondary { padding-inline: 12px; }
+      .group-heading { flex-wrap: wrap; }
+      .auth-screen { align-items: flex-start; }
+      .auth-inner { display: block; padding: 32px 19px 40px; }
+      .auth-display { margin: 35px 0 9px; font-size: clamp(53px, 13vw, 78px); }
+      .auth-branding h1 { font-size: 20px; }
+      .auth-branding p { font-size: 11px; }
+      .auth-line { margin-top: 18px; }
+      .auth-panel { margin-top: 29px; padding: 24px 20px; }
+      .auth-panel h2 { font-size: 20px; }
+      .toast { bottom: calc(82px + env(safe-area-inset-bottom)); left: 15px; right: 15px; max-width: none; }
+      body:has(.auth-screen) .toast { bottom: 20px; }
+    }
+    @media (max-width: 430px) {
+      .page-heading { flex-direction: column; }
+      .page-heading-actions { width: 100%; justify-content: flex-start; }
+      .group-title .collection-symbol { width: 50px; height: 50px; }
+      .two-fields { grid-template-columns: 1fr; gap: 0; }
+      .modal-inner { padding: 20px; }
+      .card-footer { gap: 2px; }
+      .mini-action { flex: 0 1 auto; min-width: 0; gap: 4px; padding-inline: 3px; font-size: 10px; }
+      .mini-action span { overflow: hidden; text-overflow: ellipsis; }
+      .card-footer-spacer { flex: 0 1 4px; }
+      .card-footer .icon-button { width: 29px; }
+      .pin-form .field { width: calc(50% - 5px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="loading-screen"><div><span class="loading-ring" aria-hidden="true"></span><p>جار تجهيز المساحة الخاصة...</p></div></div>
+  <dialog id="app-dialog" class="dialog" aria-labelledby="modal-title"></dialog>
+  <input id="backup-file" class="sr-only" type="file" accept=".json,application/json" tabindex="-1" aria-label="اختيار ملف نسخة احتياطية">
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script>
+    (() => {
+      "use strict";
+
+      const app = document.getElementById("app");
+      const dialog = document.getElementById("app-dialog");
+      const toast = document.getElementById("toast");
+      const backupFile = document.getElementById("backup-file");
+      const GROUP_ICONS = ["folder", "briefcase", "globe", "star", "heart", "user"];
+      const GROUP_COLORS = ["#A3E635", "#83BDF0", "#C9A7F2", "#F2BB74", "#F19487", "#7BCEB7"];
+      const ICON_LABELS = { folder: "مجلد", briefcase: "عمل", globe: "عالم", star: "مفضلة", heart: "قلب", user: "شخصي" };
+      const ICONS = {
+        mark: '<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 11.5h8M12 8v8"/><path d="M7.5 17h9"/>',
+        home: '<path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21v-7h6v7"/>',
+        accounts: '<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M7 10h10M7 15h6"/>',
+        layers: '<path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 17l9 5 9-5"/>',
+        settings: '<path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.1 1.8-1.8 1.8-1.8-1.1a8.6 8.6 0 0 1-2 .8l-.5 2.1h-2.6l-.5-2.1a8.6 8.6 0 0 1-2-.8l-1.8 1.1-1.8-1.8 1.1-1.8a8.6 8.6 0 0 1-.8-2l-2.1-.5v-2.6l2.1-.5a8.6 8.6 0 0 1 .8-2L5.8 5.7l1.8-1.8 1.8 1.1a8.6 8.6 0 0 1 2-.8L11.9 2h2.6l.5 2.1a8.6 8.6 0 0 1 2 .8l1.8-1.1 1.8 1.8-1.1 1.8a8.6 8.6 0 0 1 .8 2l2.1.5v2.6l-2.1.5a8.6 8.6 0 0 1-.9 2Z" transform="translate(-1.2 0) scale(.96)"/>',
+        plus: '<path d="M12 5v14M5 12h14"/>',
+        search: '<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/>',
+        eye: '<path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.6"/>',
+        eyeOff: '<path d="M4.4 7.4C3.2 8.6 2.5 10 2.5 12c0 0 3.5 5.5 9.5 5.5 1.7 0 3.2-.4 4.5-1.1M9.6 6.8c.8-.2 1.6-.3 2.4-.3 6 0 9.5 5.5 9.5 5.5-.5.8-1.2 1.7-2.1 2.5M3 3l18 18"/><path d="M10.2 10.2a2.6 2.6 0 0 0 3.6 3.6"/>',
+        copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+        edit: '<path d="M12 20h9M4 20l4.3-.9L19.2 8.2a2.1 2.1 0 0 0-3-3L5.3 16.1 4 20Z"/>',
+        trash: '<path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v5M14 11v5"/>',
+        lock: '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3M12 14v3"/>',
+        shield: '<path d="m12 2 8 4v5c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V6l8-4Z"/><path d="m9 12 2 2 4-4"/>',
+        upload: '<path d="M12 16V3m-5 5 5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>',
+        download: '<path d="M12 3v13m-5-5 5 5 5-5M4 18v2h16v-2"/>',
+        image: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 16-5-5-9 10"/>',
+        arrowRight: '<path d="m10 5 7 7-7 7M17 12H3"/>',
+        chevronLeft: '<path d="m15 18-6-6 6-6"/>',
+        check: '<path d="m5 12 4 4L19 6"/>',
+        close: '<path d="M5 5 19 19M19 5 5 19"/>',
+        folder: '<path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/>',
+        briefcase: '<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13c5 3 13 3 18 0M12 12v3"/>',
+        globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-5 5-5 13 0 18M12 3c5 5 5 13 0 18"/>',
+        star: '<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21 7 14.2 2 9.3l6.9-1L12 2Z"/>',
+        heart: '<path d="M20.8 8.6c0 4.3-8.8 11.4-8.8 11.4S3.2 12.9 3.2 8.6a4.7 4.7 0 0 1 8.8-2.3 4.7 4.7 0 0 1 8.8 2.3Z"/>',
+        user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
+      };
+
+      const state = {
+        db: null, meta: null, key: null, data: null,
+        authMode: "loading", error: "", authBusy: false,
+        view: "home", collectionId: null, returnView: "accounts", returnCollectionId: null,
+        search: "", visiblePasswords: new Set(), saving: false,
+        modal: null, pendingImage: null, imageLoading: false,
+        pendingImport: null, pendingRestore: null, pinFailures: 0,
+        toastTimer: null, session: 0
+      };
+
+      function icon(name, size = 20) {
+        return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.folder}</svg>`;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+      }
+
+      function number(value) { return new Intl.NumberFormat("ar").format(value); }
+      function date(value) { return new Intl.DateTimeFormat("ar", { year: "numeric", month: "long", day: "numeric" }).format(new Date(value)); }
+      function newId() { return crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, "0")).join(""); }
+      function safeImage(value) { return typeof value === "string" && /^data:image\/(png|jpeg|webp|gif);base64,[a-zA-Z0-9+/=]+$/.test(value); }
+      function findAccount(id) { return state.data.accounts.find(account => account.id === id); }
+      function findCollection(id) { return state.data.collections.find(group => group.id === id); }
+      function sortedAccounts(accounts = state.data.accounts) { return [...accounts].sort((a, b) => b.createdAt - a.createdAt || b.updatedAt - a.updatedAt); }
+      function sortedCollections() { return [...state.data.collections].sort((a, b) => b.createdAt - a.createdAt); }
+      function groupCount(id) { return state.data.accounts.filter(account => account.collectionId === id).length; }
+      function groupName(id) { return id ? (findCollection(id)?.name || "غير مصنفة") : "غير مصنفة"; }
+
+      function brand(compact = false) {
+        return `<div class="brand${compact ? " mobile-brand" : ""}" aria-label="EL5AL PASS"><span class="brand-mark">${icon("mark", compact ? 21 : 24)}</span><span><span class="brand-name">EL5AL <span>PASS</span></span>${compact ? "" : '<span class="brand-caption">حساباتك، بمساحتك الخاصة</span>'}</span></div>`;
+      }
+
+      function heroGraphic() {
+        return `<svg viewBox="0 0 400 400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="200" cy="200" r="177" stroke-width="1"/><circle cx="200" cy="200" r="139" stroke-width="1" stroke-dasharray="4 12"/><rect x="113" y="112" width="174" height="174" rx="46" stroke-width="3"/><path d="M147 199h106M200 148v103M160 253h80" stroke-width="5"/><circle cx="200" cy="200" r="110" stroke-width="1"/></svg>`;
+      }
+
+      function avatar(account, size = "") {
+        const image = safeImage(account?.image) ? `<img src="${account.image}" alt="">` : icon("accounts", size === "large" ? 31 : 23);
+        return `<span class="avatar${size ? ` ${size}` : ""}" aria-hidden="true">${image}</span>`;
+      }
+
+      function navButton(view, label, iconName, mobile = false) {
+        const active = state.view === view || (view === "accounts" && state.view === "detail") || (view === "collections" && state.view === "collection");
+        return `<button type="button" class="${mobile ? "" : "nav-link "}${active ? "active" : ""}" data-action="nav-${view}" ${active ? 'aria-current="page"' : ""}>${icon(iconName, mobile ? 20 : 19)}<span>${label}</span></button>`;
+      }
+
+      function renderShell() {
+        const titles = { home: "لوحة التحكم", accounts: "كل الحسابات", collections: "المجموعات", collection: "داخل المجموعة", detail: "تفاصيل الحساب", settings: "الإعدادات" };
+        const canSearch = ["home", "accounts", "collection"].includes(state.view);
+        return `<div class="app-shell">
+          <aside class="sidebar" aria-label="القائمة الرئيسية">
+            ${brand()}
+            <p class="side-label">مساحتك</p>
+            <nav class="side-nav" aria-label="التنقل">${navButton("home", "الرئيسية", "home")}${navButton("accounts", "الحسابات", "accounts")}${navButton("collections", "المجموعات", "layers")}${navButton("settings", "الإعدادات", "settings")}</nav>
+            <div class="side-bottom"><button class="nav-link" type="button" data-action="lock-app">${icon("lock", 19)}<span>قفل التطبيق</span></button><div class="side-security">${icon("shield", 18)}<span><strong>خزنة محلية مشفرة</strong>بياناتك محفوظة على هذا الجهاز</span></div></div>
+          </aside>
+          <div class="workspace">
+            <header class="topbar${canSearch ? "" : " no-search"}">
+              ${brand(true)}
+              <div class="topbar-meta"><div class="topbar-label">EL5AL PASS / مساحتك</div><div class="topbar-title">${titles[state.view]}</div></div>
+              <div class="topbar-tools">
+                ${canSearch ? `<label class="search-box">${icon("search", 18)}<span class="sr-only">ابحث في الحسابات</span><input id="global-search" type="search" placeholder="ابحث عن حساب..." value="${escapeHtml(state.search)}" autocomplete="off" aria-label="ابحث في الحسابات"></label>` : ""}
+                <button class="top-lock" type="button" data-action="lock-app" aria-label="قفل التطبيق" title="قفل التطبيق">${icon("lock", 18)}</button>
+              </div>
+            </header>
+            <main id="main-content" class="page">${renderPage()}</main>
+          </div>
+          <nav class="mobile-nav" aria-label="التنقل السفلي">${navButton("home", "الرئيسية", "home", true)}${navButton("accounts", "الحسابات", "accounts", true)}${navButton("collections", "المجموعات", "layers", true)}${navButton("settings", "الإعدادات", "settings", true)}</nav>
+        </div>`;
+      }
+
+      function emptyState(iconName, title, description, action, label) {
+        const actionIcon = action === "clear-search" ? "close" : action?.startsWith("nav-") ? "arrowRight" : "plus";
+        return `<div class="empty-state"><span class="empty-icon">${icon(iconName, 25)}</span><h3>${title}</h3><p>${description}</p>${action ? `<button type="button" class="button-secondary" data-action="${action}">${icon(actionIcon, 16)}${label}</button>` : ""}</div>`;
+      }
+
+      function collectionItem(group, editable = false) {
+        const virtual = group.id === "ungrouped";
+        const color = virtual ? "#A5AA9B" : group.color;
+        const id = virtual ? "ungrouped" : escapeHtml(group.id);
+        const count = groupCount(virtual ? null : group.id);
+        return `<div class="collection-item" style="--group-color:${color}">
+          <button type="button" class="collection-open" data-action="open-collection" data-id="${id}" aria-label="فتح مجموعة ${escapeHtml(group.name)}">
+            <span class="collection-symbol">${icon(virtual ? "layers" : group.icon, 21)}</span>
+            <span class="collection-copy"><strong>${escapeHtml(group.name)}</strong><small>${number(count)} ${count === 1 ? "حساب" : "حسابات"}</small></span>
+            <span class="collection-arrow">${icon("chevronLeft", 17)}</span>
+          </button>
+          ${editable && !virtual ? `<div class="collection-controls"><button type="button" class="icon-button" data-action="edit-collection" data-id="${id}" aria-label="تعديل مجموعة ${escapeHtml(group.name)}" title="تعديل">${icon("edit", 16)}</button><button type="button" class="icon-button danger" data-action="delete-collection" data-id="${id}" aria-label="حذف مجموعة ${escapeHtml(group.name)}" title="حذف">${icon("trash", 16)}</button></div>` : ""}
+        </div>`;
+      }
+
+      function accountCard(account) {
+        const id = escapeHtml(account.id);
+        const visible = state.visiblePasswords.has(account.id);
+        return `<article class="account-card" data-open-card="${id}">
+          <button type="button" class="account-card-top account-card-open" data-action="open-account" data-id="${id}" aria-label="فتح تفاصيل حساب ${escapeHtml(account.name)}">${avatar(account)}<span class="account-card-identity"><span class="account-card-name">${escapeHtml(account.name)}</span><span class="account-card-username" dir="auto">${escapeHtml(account.username)}</span></span><span class="open-arrow">${icon("chevronLeft", 17)}</span></button>
+          <div class="secret-row"><span class="secret-label">كلمة المرور</span><span class="secret-value${visible ? " revealed" : ""}" dir="${visible ? "auto" : "ltr"}">${visible ? escapeHtml(account.password) : "••••••••••"}</span><button type="button" class="icon-button${visible ? " active" : ""}" data-action="toggle-password" data-id="${id}" aria-label="${visible ? "إخفاء" : "إظهار"} كلمة المرور" title="${visible ? "إخفاء" : "إظهار"} كلمة المرور">${icon(visible ? "eyeOff" : "eye", 17)}</button></div>
+          <div class="card-footer"><button type="button" class="mini-action" data-action="copy-username" data-id="${id}" title="نسخ اسم المستخدم">${icon("copy", 15)}<span>اسم المستخدم</span></button><button type="button" class="mini-action" data-action="copy-password" data-id="${id}" title="نسخ كلمة المرور">${icon("copy", 15)}<span>كلمة المرور</span></button><span class="card-footer-spacer"></span><button type="button" class="icon-button" data-action="edit-account" data-id="${id}" aria-label="تعديل ${escapeHtml(account.name)}" title="تعديل">${icon("edit", 16)}</button><button type="button" class="icon-button danger" data-action="delete-account" data-id="${id}" aria-label="حذف ${escapeHtml(account.name)}" title="حذف">${icon("trash", 16)}</button></div>
+        </article>`;
+      }
+
+      function accountsMatching(accounts) {
+        const query = state.search.trim().toLocaleLowerCase("ar");
+        return sortedAccounts(query ? accounts.filter(account => [account.name, account.username, account.notes, groupName(account.collectionId)].some(value => value.toLocaleLowerCase("ar").includes(query))) : accounts);
+      }
+
+      function renderSearchResults(accounts = state.data.accounts) {
+        const results = accountsMatching(accounts);
+        return `<div class="page-heading"><div><h1>نتائج البحث</h1><p>البحث فوري داخل حساباتك المحفوظة على هذا الجهاز.</p></div></div><p class="results-caption">${number(results.length)} ${results.length === 1 ? "نتيجة" : "نتائج"}</p>${results.length ? `<div class="account-grid">${results.map(accountCard).join("")}</div>` : emptyState("search", "لا توجد نتائج", "جرّب كتابة اسم حساب أو اسم مستخدم آخر.", "clear-search", "مسح البحث")}`;
+      }
+
+      function renderHome() {
+        if (state.search.trim()) return renderSearchResults();
+        const ungroupedCount = groupCount(null);
+        const groups = sortedCollections().slice(0, 4);
+        if (ungroupedCount && groups.length < 4) groups.push({ id: "ungrouped", name: "غير مصنفة" });
+        const recent = sortedAccounts().slice(0, 4);
+        return `<section class="welcome" aria-label="مرحباً بك"><div class="welcome-copy"><p class="eyebrow">مرحباً بك في مساحتك الخاصة</p><h1 class="hero-brand">EL5AL <span>PASS</span></h1><h2>حساباتك في مكانها الصحيح.</h2><p class="welcome-description">احتفظ ببيانات حساباتك ونظّمها بسهولة، في خزنة محلية مشفرة بكلمة مرورك الرئيسية.</p><button type="button" class="button-primary" data-action="add-account">${icon("plus", 19)} إضافة حساب</button></div><div class="hero-graphic">${heroGraphic()}</div></section>
+          <div class="counts" aria-label="ملخص الحسابات والمجموعات"><div class="count"><strong>${number(state.data.accounts.length)}</strong><span>إجمالي الحسابات</span></div><div class="count"><strong>${number(state.data.collections.length)}</strong><span>المجموعات</span></div></div>
+          <section class="section" aria-labelledby="home-groups-title"><div class="section-heading"><div><h2 id="home-groups-title">المجموعات</h2><p>كل شيء مرتب كما تحب.</p></div><button type="button" class="text-button section-action" data-action="nav-collections">إدارة المجموعات ${icon("chevronLeft", 15)}</button></div>${groups.length ? `<div class="collection-grid">${groups.map(group => collectionItem(group)).join("")}</div>` : emptyState("layers", "لا توجد مجموعات بعد", "أنشئ مجموعة لتجمع حساباتك بالطريقة التي تناسبك.", "add-collection", "إنشاء مجموعة")}</section>
+          <section class="section" aria-labelledby="recent-title"><div class="section-heading"><div><h2 id="recent-title">آخر الحسابات المضافة</h2><p>وصول سريع إلى أحدث حساباتك.</p></div>${state.data.accounts.length ? `<button type="button" class="text-button section-action" data-action="nav-accounts">عرض الكل ${icon("chevronLeft", 15)}</button>` : ""}</div>${recent.length ? `<div class="account-grid">${recent.map(accountCard).join("")}</div>` : emptyState("accounts", "مساحتك جاهزة", "أضف حسابك الأول لتبدأ بتنظيم بيانات الدخول.", "add-account", "إضافة أول حساب")}</section>`;
+      }
+
+      function renderAccounts() {
+        if (state.search.trim()) return renderSearchResults();
+        const accounts = sortedAccounts();
+        return `<div class="page-heading"><div><h1>كل الحسابات</h1><p>جميع حساباتك مرتبة من الأحدث إضافة إلى الأقدم.</p></div><button type="button" class="button-primary" data-action="add-account">${icon("plus", 18)} إضافة حساب</button></div>${accounts.length ? `<div class="account-grid">${accounts.map(accountCard).join("")}</div>` : emptyState("accounts", "لا توجد حسابات بعد", "أضف حسابك الأول، وستجده هنا كلما احتجت إليه.", "add-account", "إضافة حساب")}`;
+      }
+
+      function renderCollections() {
+        const groups = sortedCollections();
+        if (groupCount(null)) groups.push({ id: "ungrouped", name: "غير مصنفة" });
+        return `<div class="page-heading"><div><h1>المجموعات</h1><p>قسّم حساباتك إلى مساحات يسهل الوصول إليها.</p></div><button type="button" class="button-primary" data-action="add-collection">${icon("plus", 18)} مجموعة جديدة</button></div>${groups.length ? `<div class="collection-grid">${groups.map(group => collectionItem(group, true)).join("")}</div>` : emptyState("layers", "لا توجد مجموعات بعد", "أنشئ مجموعتك الأولى لتبقى حساباتك مرتبة.", "add-collection", "إنشاء مجموعة")}`;
+      }
+
+      function renderCollection() {
+        const group = state.collectionId ? findCollection(state.collectionId) : { id: "ungrouped", name: "غير مصنفة", icon: "layers", color: "#A5AA9B" };
+        if (!group) return emptyState("layers", "المجموعة غير موجودة", "ربما حُذفت هذه المجموعة.", "nav-collections", "عرض المجموعات");
+        const accounts = accountsMatching(state.data.accounts.filter(account => account.collectionId === state.collectionId));
+        const count = groupCount(state.collectionId);
+        const actions = state.collectionId ? `<button type="button" class="button-quiet" data-action="edit-collection" data-id="${escapeHtml(group.id)}">${icon("edit", 16)} تعديل</button><button type="button" class="icon-button danger" data-action="delete-collection" data-id="${escapeHtml(group.id)}" aria-label="حذف المجموعة" title="حذف المجموعة">${icon("trash", 18)}</button>` : "";
+        return `<button type="button" class="back-button" data-action="nav-collections">${icon("arrowRight", 17)} العودة للمجموعات</button><div class="page-heading group-heading"><div class="group-title"><span class="collection-symbol" style="--group-color:${group.color}">${icon(group.icon, 27)}</span><div><h1>${escapeHtml(group.name)}</h1><p>${number(count)} ${count === 1 ? "حساب في هذه المجموعة" : "حسابات في هذه المجموعة"}</p></div></div><div class="page-heading-actions">${actions}<button type="button" class="button-primary" data-action="add-account">${icon("plus", 17)} إضافة حساب</button></div></div>${state.search.trim() ? `<p class="results-caption">${number(accounts.length)} ${accounts.length === 1 ? "نتيجة" : "نتائج"}</p>` : ""}${accounts.length ? `<div class="account-grid">${accounts.map(accountCard).join("")}</div>` : state.search.trim() ? emptyState("search", "لا توجد نتائج هنا", "جرّب اسماً آخر داخل هذه المجموعة.", "clear-search", "مسح البحث") : emptyState("accounts", "لا توجد حسابات هنا", "أضف حساباً لهذه المجموعة، أو انقل حساباً إليها من تفاصيله.", "add-account", "إضافة حساب")}`;
+      }
+
+      function collectionOptions(selected) {
+        return `<option value="none" ${selected === null ? "selected" : ""}>بدون مجموعة</option>${sortedCollections().map(group => `<option value="${escapeHtml(group.id)}" ${selected === group.id ? "selected" : ""}>${escapeHtml(group.name)}</option>`).join("")}`;
+      }
+
+      function renderDetail() {
+        const account = findAccount(state.selectedAccountId);
+        if (!account) return emptyState("accounts", "الحساب غير موجود", "ربما حُذف هذا الحساب.", "nav-accounts", "عرض الحسابات");
+        const id = escapeHtml(account.id);
+        const visible = state.visiblePasswords.has(account.id);
+        const created = date(account.createdAt);
+        return `<button type="button" class="back-button" data-action="back-from-detail">${icon("arrowRight", 17)} رجوع</button><div class="detail-content"><div class="detail-head">${avatar(account, "large")}<div><h1>${escapeHtml(account.name)}</h1><p dir="auto">${escapeHtml(account.username)}</p></div></div>
+          <div class="detail-field"><span class="field-title">اسم المستخدم</span><div class="detail-value"><strong dir="auto">${escapeHtml(account.username)}</strong><button type="button" class="icon-button" data-action="copy-username" data-id="${id}" aria-label="نسخ اسم المستخدم" title="نسخ اسم المستخدم">${icon("copy", 18)}</button></div></div>
+          <div class="detail-field"><span class="field-title">كلمة المرور</span><div class="detail-value"><strong class="${visible ? "shown" : "masked"}" dir="${visible ? "auto" : "ltr"}">${visible ? escapeHtml(account.password) : "••••••••••"}</strong><button type="button" class="icon-button${visible ? " active" : ""}" data-action="toggle-password" data-id="${id}" aria-label="${visible ? "إخفاء" : "إظهار"} كلمة المرور" title="${visible ? "إخفاء" : "إظهار"}">${icon(visible ? "eyeOff" : "eye", 18)}</button><button type="button" class="icon-button" data-action="copy-password" data-id="${id}" aria-label="نسخ كلمة المرور" title="نسخ كلمة المرور">${icon("copy", 18)}</button></div></div>
+          <div class="detail-field"><label for="move-collection">المجموعة</label><select id="move-collection" class="select detail-select" data-role="move-account" data-id="${id}" aria-label="نقل الحساب إلى مجموعة">${collectionOptions(account.collectionId)}</select></div>
+          ${account.notes ? `<div class="detail-field"><span class="field-title">ملاحظات</span><p class="detail-note">${escapeHtml(account.notes)}</p></div>` : ""}
+          <p class="detail-meta">أُضيف في ${created}${account.updatedAt > account.createdAt ? ` · آخر تعديل ${date(account.updatedAt)}` : ""}</p>
+          <div class="detail-actions"><button type="button" class="button-secondary" data-action="edit-account" data-id="${id}">${icon("edit", 17)} تعديل الحساب</button><button type="button" class="button-quiet" data-action="delete-account" data-id="${id}">${icon("trash", 17)} حذف</button></div></div>`;
+      }
+
+      function renderSettings() {
+        const pinEnabled = Boolean(state.data.pin);
+        return `<div class="page-heading"><div><h1>الإعدادات</h1><p>تحكم بقفل الشاشة واحتفظ بنسخة من بياناتك.</p></div></div><div class="settings-content">
+          <section class="settings-section" aria-labelledby="pin-title"><h2 id="pin-title">قفل PIN</h2><p>يمكنك قفل الشاشة بسرعة أثناء بقاء التطبيق مفتوحاً.</p>${pinEnabled ? `<div class="pin-status">${icon("check", 17)} قفل PIN مفعل</div>` : ""}<div class="notice">${icon("shield", 18)}<span>PIN يحمي شاشة التطبيق خلال الجلسة فقط، ولا يُشفّر البيانات ولا يحل محل كلمة المرور الرئيسية. بعد إغلاق التطبيق أو إنهاء الجلسة ستحتاج إلى كلمة المرور الرئيسية لفتح الخزنة المشفرة.</span></div><form id="pin-form" class="pin-form"><label class="field"><span>PIN جديد</span><input class="input" name="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password" placeholder="من ٤ إلى ٨ أرقام" required></label><label class="field"><span>تأكيد PIN</span><input class="input" name="confirm" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password" placeholder="أعد إدخال PIN" required></label><button type="submit" class="button-primary">${pinEnabled ? "تغيير PIN" : "تعيين PIN"}</button></form>${pinEnabled ? `<button type="button" class="text-button" data-action="remove-pin">تعطيل PIN</button>` : ""}</section>
+          <section class="settings-section" aria-labelledby="backup-title"><h2 id="backup-title">النسخة الاحتياطية</h2><p>صدّر ملفاً مشفراً يضم الحسابات والمجموعات والصور وارتباطاتها. تحتاج إلى كلمة المرور الرئيسية الخاصة بالنسخة عند استعادتها.</p><div class="settings-actions"><button type="button" class="button-secondary" data-action="export-backup">${icon("download", 17)} تصدير نسخة احتياطية</button><button type="button" class="button-quiet" data-action="import-backup">${icon("upload", 17)} استعادة نسخة</button></div></section>
+          <section class="settings-section" aria-labelledby="privacy-title"><h2 id="privacy-title">خصوصيتك</h2><p>تُحفظ الخزنة والصور داخلها محلياً في IndexedDB بعد تشفيرها باستخدام AES-GCM بمفتاح مشتق من كلمة المرور الرئيسية عبر PBKDF2. لا تُحفظ كلمة المرور الرئيسية نفسها. إذا فقدتها فلن يمكن فتح بياناتك أو نسختك الاحتياطية.</p><button type="button" class="button-quiet" data-action="full-lock">${icon("lock", 17)} إنهاء الجلسة وقفل الخزنة</button></section>
+        </div>`;
+      }
+
+      function renderPage() {
+        switch (state.view) {
+          case "accounts": return renderAccounts();
+          case "collections": return renderCollections();
+          case "collection": return renderCollection();
+          case "detail": return renderDetail();
+          case "settings": return renderSettings();
+          default: return renderHome();
+        }
+      }
+
+      function renderAuth() {
+        if (state.authMode === "loading") return `<div><span class="loading-ring" aria-hidden="true"></span><p>جار تجهيز المساحة الخاصة...</p></div>`;
+        const mode = state.authMode;
+        let panel = "";
+        if (mode === "setup") {
+          panel = `<div class="auth-panel-top"><span class="auth-panel-icon">${icon("shield", 22)}</span><span class="auth-panel-kicker">الخطوة الأولى</span></div><h2>أنشئ خزنتك الخاصة</h2><p class="auth-panel-description">اختر كلمة مرور رئيسية لفتح بياناتك وتشفيرها على جهازك.</p><form id="setup-form"><label class="field"><span>كلمة المرور الرئيسية</span><input class="input" type="password" name="password" minlength="10" maxlength="200" autocomplete="new-password" placeholder="١٠ أحرف على الأقل" required autofocus></label><label class="field"><span>تأكيد كلمة المرور</span><input class="input" type="password" name="confirm" minlength="10" maxlength="200" autocomplete="new-password" placeholder="أعد إدخال كلمة المرور" required></label><button class="button-primary" type="submit">${icon("lock", 18)} إنشاء الخزنة</button></form><button type="button" class="text-button" data-action="import-backup">لديك نسخة احتياطية؟ استعدها</button><p class="auth-footnote">لن نخزن كلمة المرور الرئيسية. احتفظ بها جيداً، فلا يمكن استعادة البيانات بدونها.</p>`;
+        } else if (mode === "unlock") {
+          panel = `<div class="auth-panel-top"><span class="auth-panel-icon">${icon("lock", 22)}</span><span class="auth-panel-kicker">خزنتك بانتظارك</span></div><h2>مرحباً بعودتك</h2><p class="auth-panel-description">أدخل كلمة المرور الرئيسية لفك تشفير حساباتك على هذا الجهاز.</p><form id="unlock-form"><label class="field"><span>كلمة المرور الرئيسية</span><input class="input" type="password" name="password" autocomplete="current-password" placeholder="أدخل كلمة المرور" required autofocus></label><button class="button-primary" type="submit">${icon("lock", 18)} فتح الخزنة</button></form><button type="button" class="text-button" data-action="import-backup">استعادة نسخة احتياطية بدلاً من ذلك</button><p class="auth-footnote">لا يمكن فتح الخزنة أو النسخة الاحتياطية دون كلمة المرور الرئيسية الصحيحة.</p>`;
+        } else if (mode === "pin") {
+          panel = `<div class="auth-panel-top"><span class="auth-panel-icon">${icon("lock", 22)}</span><span class="auth-panel-kicker">الشاشة مقفلة</span></div><h2>أدخل PIN للمتابعة</h2><p class="auth-panel-description">هذا قفل للشاشة أثناء الجلسة، وليس بديلاً عن تشفير الخزنة.</p><form id="pin-unlock-form"><label class="field"><span>رمز PIN</span><input class="input" type="password" name="pin" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="رمز PIN" required autofocus></label><button class="button-primary" type="submit">فتح التطبيق</button></form><button type="button" class="text-button" data-action="use-master">فتح بكلمة المرور الرئيسية</button><p class="auth-footnote">بعد خمس محاولات غير صحيحة ستحتاج إلى كلمة المرور الرئيسية.</p>`;
+        } else {
+          panel = `<div class="auth-panel-top"><span class="auth-panel-icon">${icon("shield", 22)}</span></div><h2>تعذر فتح التطبيق</h2><p class="auth-panel-description">${escapeHtml(state.error || "لا يمكن الوصول إلى التخزين المحلي أو التشفير في هذا المتصفح.")}</p>${state.db ? `<button type="button" class="button-secondary" data-action="import-backup">${icon("upload", 17)} استعادة نسخة احتياطية</button>` : ""}<p class="auth-footnote">يتطلب التطبيق متصفحاً يدعم IndexedDB و Web Crypto في سياق آمن، مثل ملف محلي أو صفحة HTTPS.</p>`;
+        }
+        return `<div class="auth-screen"><div class="auth-inner"><div class="auth-branding">${brand()}<div class="auth-display">EL5AL<br><span>PASS.</span></div><h1>حساباتك. مساحتك الخاصة.</h1><p>مكان بسيط ومرتب تحفظ فيه بيانات حساباتك، وتعود إليه وقتما تحتاج.</p><div class="auth-line"></div></div><div class="auth-panel">${panel}</div></div></div>`;
+      }
+
+      function render() {
+        app.className = state.authMode === "loading" ? "loading-screen" : "";
+        app.innerHTML = state.authMode ? renderAuth() : renderShell();
+      }
+
+      function renderContent() {
+        const main = document.getElementById("main-content");
+        if (main && !state.authMode) main.innerHTML = renderPage();
+      }
+
+      function navigate(view, collectionId = null) {
+        state.view = view;
+        state.collectionId = view === "collection" ? collectionId : null;
+        state.search = "";
+        state.visiblePasswords.clear();
+        render();
+        window.scrollTo(0, 0);
+      }
+
+      function openDetail(id) {
+        if (!findAccount(id)) return;
+        state.returnView = state.view === "detail" ? "accounts" : state.view;
+        state.returnCollectionId = state.collectionId;
+        state.selectedAccountId = id;
+        state.view = "detail";
+        state.search = "";
+        state.visiblePasswords.clear();
+        render();
+        window.scrollTo(0, 0);
+      }
+
+      function modalHeader(title, description = "") {
+        return `<div class="modal-header"><div><h2 id="modal-title">${title}</h2>${description ? `<p>${description}</p>` : ""}</div><button type="button" class="icon-button" data-action="close-modal" aria-label="إغلاق النافذة">${icon("close", 19)}</button></div>`;
+      }
+
+      function accountModal() {
+        const account = state.modal.id ? findAccount(state.modal.id) : null;
+        const groupId = account ? account.collectionId : (state.view === "collection" ? state.collectionId : null);
+        return `<div class="modal-inner">${modalHeader(account ? "تعديل الحساب" : "إضافة حساب", "كل البيانات تبقى داخل خزنتك المحلية المشفرة.")}
+          <form id="account-form"><div class="two-fields"><label class="field"><span>اسم الحساب أو المنصة</span><input class="input" name="name" maxlength="100" value="${escapeHtml(account?.name || "")}" placeholder="مثال: البريد الإلكتروني" required autofocus></label><label class="field"><span>اسم المستخدم</span><input class="input" name="username" maxlength="180" value="${escapeHtml(account?.username || "")}" placeholder="اسم المستخدم أو البريد" autocomplete="off" required></label></div>
+          <div class="field"><label class="field-label" for="account-password">كلمة المرور</label><div class="input-wrap"><input id="account-password" class="input" type="password" name="password" maxlength="2000" value="${escapeHtml(account?.password || "")}" autocomplete="new-password" required><button type="button" class="icon-button" data-action="modal-toggle-password" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور">${icon("eye", 18)}</button></div></div>
+          <div class="image-picker"><div id="image-preview">${avatar({ image: state.pendingImage }, "preview")}</div><div class="image-picker-copy"><strong>صورة الحساب <span class="optional">(اختيارية)</span></strong><div class="image-picker-actions"><button type="button" class="upload-label" data-action="select-image">${icon("image", 15)} اختر صورة</button><button type="button" class="remove-image" data-action="remove-image" ${state.pendingImage ? "" : "hidden"}>إزالة الصورة</button></div><small>تُصغّر الصورة محلياً قبل حفظها. الحد الأقصى ٨ ميجابايت.</small></div><input id="account-image" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp,image/gif" tabindex="-1" aria-label="صورة الحساب"></div>
+          <label class="field"><span>المجموعة <span class="optional">(اختيارية)</span></span><select class="select" name="collectionId">${collectionOptions(groupId)}</select></label>
+          <label class="field"><span>ملاحظات <span class="optional">(اختيارية)</span></span><textarea class="textarea" name="notes" maxlength="4000" placeholder="أي معلومة تساعدك على تذكر هذا الحساب...">${escapeHtml(account?.notes || "")}</textarea></label>
+          <div class="modal-footer"><button type="button" class="button-quiet" data-action="close-modal">إلغاء</button><button type="submit" class="button-primary" data-submit>${icon("check", 17)} ${account ? "حفظ التغييرات" : "حفظ الحساب"}</button></div></form></div>`;
+      }
+
+      function collectionModal() {
+        const group = state.modal.id ? findCollection(state.modal.id) : null;
+        const selectedIcon = group?.icon || "folder";
+        const selectedColor = group?.color || GROUP_COLORS[0];
+        return `<div class="modal-inner">${modalHeader(group ? "تعديل المجموعة" : "مجموعة جديدة", "امنح حساباتك مساحة منظمة يسهل العثور عليها.")}
+          <form id="collection-form"><label class="field"><span>اسم المجموعة</span><input class="input" name="name" maxlength="80" value="${escapeHtml(group?.name || "")}" placeholder="مثال: العمل" required autofocus></label>
+          <span class="choices-label">اختر أيقونة</span><div class="icon-choices" role="group" aria-label="أيقونة المجموعة">${GROUP_ICONS.map(name => `<label class="choice" title="${ICON_LABELS[name]}"><input type="radio" name="icon" value="${name}" aria-label="${ICON_LABELS[name]}" ${selectedIcon === name ? "checked" : ""}><span>${icon(name, 20)}</span></label>`).join("")}</div>
+          <span class="choices-label">اختر لوناً</span><div class="color-choices" role="group" aria-label="لون المجموعة">${GROUP_COLORS.map((color, index) => `<label class="choice" title="اللون ${number(index + 1)}"><input type="radio" name="color" value="${color}" aria-label="اللون ${number(index + 1)}" ${selectedColor === color ? "checked" : ""}><span style="--choice-color:${color}"></span></label>`).join("")}</div>
+          <div class="modal-footer"><button type="button" class="button-quiet" data-action="close-modal">إلغاء</button><button type="submit" class="button-primary" data-submit>${icon("check", 17)} ${group ? "حفظ التغييرات" : "إنشاء المجموعة"}</button></div></form></div>`;
+      }
+
+      function confirmModal() {
+        const { target, id } = state.modal;
+        let title, description, warning, button;
+        if (target === "account") {
+          const account = findAccount(id);
+          title = "حذف الحساب؟";
+          description = `هل تريد حذف حساب <strong>${escapeHtml(account?.name || "هذا الحساب")}</strong> نهائياً؟`;
+          warning = "لا يمكن التراجع عن الحذف إلا باستعادة نسخة احتياطية سابقة.";
+          button = "حذف الحساب";
+        } else if (target === "collection") {
+          const group = findCollection(id);
+          title = "حذف المجموعة؟";
+          description = `هل تريد حذف مجموعة <strong>${escapeHtml(group?.name || "هذه المجموعة")}</strong>؟`;
+          warning = "لن تُحذف حساباتها، بل ستُنقل إلى غير مصنفة.";
+          button = "حذف المجموعة";
+        } else {
+          title = "تعطيل قفل PIN؟";
+          description = "سيُزال قفل الشاشة السريع. ستبقى بيانات الخزنة مشفرة بكلمة المرور الرئيسية.";
+          warning = "";
+          button = "تعطيل PIN";
+        }
+        return `<div class="modal-inner">${modalHeader(title)}<p class="confirm-copy">${description}</p>${warning ? `<p class="confirm-warning">${warning}</p>` : ""}<form id="confirm-form"><div class="modal-footer"><button type="button" class="button-quiet" data-action="close-modal">إلغاء</button><button type="submit" class="button-danger" data-submit>${button}</button></div></form></div>`;
+      }
+
+      function restorePasswordModal() {
+        return `<div class="modal-inner">${modalHeader("استعادة نسخة احتياطية", "أدخل كلمة المرور الرئيسية الخاصة بالنسخة المختارة.")}<form id="restore-password-form"><label class="field"><span>كلمة المرور الرئيسية للنسخة</span><input class="input" name="password" type="password" autocomplete="off" required autofocus></label><p class="confirm-copy">سيتم التحقق من النسخة وفك تشفيرها محلياً قبل أن نطلب منك تأكيد الاستبدال.</p><div class="modal-footer"><button type="button" class="button-quiet" data-action="close-modal">إلغاء</button><button type="submit" class="button-primary" data-submit>متابعة</button></div></form></div>`;
+      }
+
+      function restoreConfirmModal() {
+        const data = state.pendingRestore.data;
+        return `<div class="modal-inner">${modalHeader("تأكيد الاستعادة")}<p class="confirm-copy">تحتوي النسخة على <strong>${number(data.accounts.length)} حساب</strong> و<strong>${number(data.collections.length)} مجموعة</strong>، مع الصور وارتباطات الحسابات بمجموعاتها.</p><p class="confirm-warning">سيتم استبدال جميع البيانات الحالية على هذا الجهاز ببيانات هذه النسخة. لا يمكن التراجع إلا إذا كانت لديك نسخة أخرى.</p><form id="restore-confirm-form"><div class="modal-footer"><button type="button" class="button-quiet" data-action="close-modal">إلغاء</button><button type="submit" class="button-danger" data-submit>استعادة واستبدال</button></div></form></div>`;
+      }
+
+      function openModal(type, options = {}) {
+        if (state.saving || (state.authBusy && dialog.open)) return;
+        if (dialog.open) closeModal();
+        state.modal = { type, ...options };
+        state.pendingImage = type === "account" && options.id ? (findAccount(options.id)?.image || null) : null;
+        state.imageLoading = false;
+        dialog.innerHTML = type === "account" ? accountModal() : type === "collection" ? collectionModal() : type === "confirm" ? confirmModal() : type === "restore-password" ? restorePasswordModal() : restoreConfirmModal();
+        dialog.showModal();
+        requestAnimationFrame(() => dialog.querySelector("[autofocus]")?.focus());
+      }
+
+      function closeModal() {
+        if (state.saving || (state.authBusy && state.modal?.type === "restore-password")) return;
+        const type = state.modal?.type;
+        if (dialog.open) dialog.close();
+        dialog.innerHTML = "";
+        state.modal = null;
+        state.pendingImage = null;
+        state.imageLoading = false;
+        if (type === "restore-password" || type === "restore-confirm") {
+          state.pendingImport = null;
+          state.pendingRestore = null;
+        }
+      }
+
+      function modalBusy(busy, message = "جار الحفظ...") {
+        const button = dialog.querySelector("[data-submit]");
+        if (!button) return;
+        if (busy) {
+          button.dataset.originalHtml = button.innerHTML;
+          button.textContent = message;
+          button.disabled = true;
+        } else {
+          button.innerHTML = button.dataset.originalHtml || button.innerHTML;
+          button.disabled = false;
+        }
+      }
+
+      function showToast(message, error = false) {
+        clearTimeout(state.toastTimer);
+        toast.className = `toast${error ? " error" : ""}`;
+        toast.innerHTML = `${icon(error ? "close" : "check", 18)}<span>${escapeHtml(message)}</span>`;
+        toast.hidden = false;
+        state.toastTimer = setTimeout(() => { toast.hidden = true; }, 3800);
+      }
+
+      function openDatabase() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open("el5al-pass-vault", 1);
+          request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains("meta")) db.createObjectStore("meta", { keyPath: "id" });
+            if (!db.objectStoreNames.contains("vault")) db.createObjectStore("vault", { keyPath: "id" });
+          };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+          request.onblocked = () => reject(new Error("أغلق علامات التبويب الأخرى لهذا التطبيق ثم أعد المحاولة."));
+        });
+      }
+
+      function readRecord(store, key = "main") {
+        return new Promise((resolve, reject) => {
+          const request = state.db.transaction(store, "readonly").objectStore(store).get(key);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      function writeRecords(stores, writer) {
+        return new Promise((resolve, reject) => {
+          const tx = state.db.transaction(stores, "readwrite");
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error || new Error("تعذر حفظ البيانات."));
+          tx.onabort = () => reject(tx.error || new Error("أُلغيت عملية الحفظ."));
+          try { writer(tx); } catch (error) { tx.abort(); reject(error); }
+        });
+      }
+
+      function base64(bytes) {
+        const data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+        let binary = "";
+        for (let index = 0; index < data.length; index += 32768) binary += String.fromCharCode(...data.subarray(index, index + 32768));
+        return btoa(binary);
+      }
+
+      function unbase64(value) { return Uint8Array.from(atob(value), character => character.charCodeAt(0)); }
+      function validBase64(value) { return typeof value === "string" && value.length > 0 && value.length % 4 === 0 && /^[a-zA-Z0-9+/]+={0,2}$/.test(value); }
+
+      async function deriveKey(password, meta) {
+        const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+        return crypto.subtle.deriveKey({ name: "PBKDF2", salt: unbase64(meta.salt), iterations: meta.iterations, hash: "SHA-256" }, material, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+      }
+
+      async function encryptVault(data, key) {
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(JSON.stringify(data)));
+        return { id: "main", iv: base64(iv), ciphertext: base64(encrypted), updatedAt: Date.now() };
+      }
+
+      async function decryptVault(record, key) {
+        const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unbase64(record.iv) }, key, unbase64(record.ciphertext));
+        return validateData(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(plaintext)));
+      }
+
+      function validateMeta(meta) {
+        if (!meta || !validBase64(meta.salt) || unbase64(meta.salt).length !== 16 || !Number.isInteger(meta.iterations) || meta.iterations < 100000 || meta.iterations > 1500000) throw new Error("إعدادات التشفير غير صالحة.");
+        return { id: "main", salt: meta.salt, iterations: meta.iterations, createdAt: Number(meta.createdAt) || Date.now() };
+      }
+
+      function validateRecord(record) {
+        if (!record || !validBase64(record.iv) || unbase64(record.iv).length !== 12 || !validBase64(record.ciphertext) || record.ciphertext.length < 24) throw new Error("بيانات النسخة غير صالحة.");
+        return { id: "main", iv: record.iv, ciphertext: record.ciphertext, updatedAt: Number(record.updatedAt) || Date.now() };
+      }
+
+      function validateData(data) {
+        if (!data || data.version !== 1 || !Array.isArray(data.accounts) || !Array.isArray(data.collections)) throw new Error("صيغة الخزنة غير صالحة.");
+        const ids = new Set();
+        const validTime = value => Number.isFinite(value) && value >= 0 && value <= 8640000000000000;
+        for (const group of data.collections) {
+          if (!group || typeof group.id !== "string" || !group.id || group.id.length > 100 || group.id === "ungrouped" || group.id === "none" || ids.has(group.id) || typeof group.name !== "string" || !group.name.trim() || group.name.length > 80 || !GROUP_ICONS.includes(group.icon) || !GROUP_COLORS.includes(group.color) || !validTime(group.createdAt) || !validTime(group.updatedAt)) throw new Error("بيانات المجموعات غير صالحة.");
+          ids.add(group.id);
+        }
+        const accountIds = new Set();
+        for (const account of data.accounts) {
+          if (!account || typeof account.id !== "string" || !account.id || account.id.length > 100 || accountIds.has(account.id) || typeof account.name !== "string" || !account.name.trim() || account.name.length > 100 || typeof account.username !== "string" || !account.username.trim() || account.username.length > 180 || typeof account.password !== "string" || !account.password || account.password.length > 2000 || typeof account.notes !== "string" || account.notes.length > 4000 || (account.image !== null && !safeImage(account.image)) || (account.collectionId !== null && !ids.has(account.collectionId)) || !validTime(account.createdAt) || !validTime(account.updatedAt)) throw new Error("بيانات الحسابات أو علاقاتها غير صالحة.");
+          accountIds.add(account.id);
+        }
+        if (data.pin !== null && (typeof data.pin !== "object" || !validBase64(data.pin.salt) || !validBase64(data.pin.hash) || unbase64(data.pin.salt).length !== 16 || unbase64(data.pin.hash).length !== 32)) throw new Error("بيانات قفل PIN غير صالحة.");
+        return data;
+      }
+
+      async function commitMutation(change) {
+        if (state.saving || !state.key || !state.data) return false;
+        state.saving = true;
+        const session = state.session;
+        const previous = JSON.parse(JSON.stringify(state.data));
+        try {
+          await change(state.data);
+          if (session !== state.session) return false;
+          validateData(state.data);
+          const record = await encryptVault(state.data, state.key);
+          if (session !== state.session) return false;
+          await writeRecords(["vault"], tx => tx.objectStore("vault").put(record));
+          return session === state.session;
+        } catch (error) {
+          if (session === state.session) {
+            state.data = previous;
+            showToast("تعذر حفظ البيانات. تحقق من مساحة التخزين وحاول مجدداً.", true);
+          }
+          return false;
+        } finally {
+          if (session === state.session) state.saving = false;
+        }
+      }
+
+      function normalizeDigits(value) {
+        return value.replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 0x660)).replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 0x6F0));
+      }
+
+      async function pinHash(pin, salt) {
+        const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveBits"]);
+        const digest = await crypto.subtle.deriveBits({ name: "PBKDF2", salt: unbase64(salt), iterations: 120000, hash: "SHA-256" }, material, 256);
+        return base64(digest);
+      }
+
+      async function verifyPin(pin, saved) {
+        const actual = unbase64(await pinHash(pin, saved.salt));
+        const expected = unbase64(saved.hash);
+        let difference = 0;
+        for (let index = 0; index < expected.length; index++) difference |= expected[index] ^ actual[index];
+        return difference === 0;
+      }
+
+      async function init() {
+        const session = state.session;
+        try {
+          if (!window.indexedDB || !window.crypto?.subtle || !window.crypto?.getRandomValues) throw new Error("التخزين المحلي أو Web Crypto غير متاح. افتح التطبيق من ملف محلي أو عبر HTTPS في متصفح حديث.");
+          state.meta = null;
+          state.error = "";
+          const db = await openDatabase();
+          if (session !== state.session) { db.close(); return; }
+          state.db = db;
+          db.onversionchange = () => db.close();
+          const [rawMeta, rawVault] = await Promise.all([readRecord("meta"), readRecord("vault")]);
+          if (session !== state.session) return;
+          if (!rawMeta && !rawVault) state.authMode = "setup";
+          else if (rawMeta && rawVault) {
+            state.meta = validateMeta(rawMeta);
+            validateRecord(rawVault);
+            state.authMode = "unlock";
+          } else throw new Error("بيانات الخزنة غير مكتملة. يمكنك استعادة نسخة احتياطية إن كانت متوفرة.");
+        } catch (error) {
+          if (session !== state.session) return;
+          state.authMode = "error";
+          state.error = error.message || "تعذر تشغيل التطبيق.";
+        }
+        if (session === state.session) render();
+      }
+
+      function setFormBusy(form, busy, text) {
+        const button = form.querySelector('button[type="submit"]');
+        if (!button) return;
+        if (busy) { button.dataset.originalHtml = button.innerHTML; button.textContent = text; button.disabled = true; }
+        else { button.innerHTML = button.dataset.originalHtml || button.innerHTML; button.disabled = false; }
+      }
+
+      async function handleSetup(form) {
+        if (state.authBusy) return;
+        const session = state.session;
+        const fields = new FormData(form);
+        const password = fields.get("password");
+        if (password !== fields.get("confirm")) return showToast("كلمتا المرور غير متطابقتين.", true);
+        state.authBusy = true;
+        setFormBusy(form, true, "جار إنشاء الخزنة...");
+        try {
+          const meta = { id: "main", salt: base64(crypto.getRandomValues(new Uint8Array(16))), iterations: 310000, createdAt: Date.now() };
+          const key = await deriveKey(password, meta);
+          const data = { version: 1, accounts: [], collections: [], pin: null };
+          const record = await encryptVault(data, key);
+          if (session !== state.session) return;
+          await writeRecords(["meta", "vault"], tx => { tx.objectStore("meta").put(meta); tx.objectStore("vault").put(record); });
+          if (session !== state.session) return;
+          state.meta = meta;
+          state.key = key;
+          state.data = data;
+          state.authMode = null;
+          navigate("home");
+          showToast("خزنتك جاهزة. بياناتك مشفرة على هذا الجهاز.");
+        } catch (error) {
+          if (session === state.session) {
+            showToast("تعذر إنشاء الخزنة. تحقق من سماح المتصفح بالتخزين.", true);
+            if (form.isConnected) setFormBusy(form, false);
+          }
+        } finally { if (session === state.session) state.authBusy = false; }
+      }
+
+      async function handleUnlock(form) {
+        if (state.authBusy) return;
+        const session = state.session;
+        state.authBusy = true;
+        setFormBusy(form, true, "جار فتح الخزنة...");
+        try {
+          const key = await deriveKey(new FormData(form).get("password"), state.meta);
+          const record = validateRecord(await readRecord("vault"));
+          const data = await decryptVault(record, key);
+          if (session !== state.session) return;
+          state.key = key;
+          state.data = data;
+          state.authMode = null;
+          state.pinFailures = 0;
+          navigate("home");
+        } catch (error) {
+          if (session === state.session) {
+            showToast("كلمة المرور غير صحيحة أو تعذر قراءة الخزنة.", true);
+            if (form.isConnected) { form.elements.password.value = ""; setFormBusy(form, false); form.elements.password.focus(); }
+          }
+        } finally { if (session === state.session) state.authBusy = false; }
+      }
+
+      async function handlePinUnlock(form) {
+        if (state.authBusy) return;
+        const session = state.session;
+        state.authBusy = true;
+        setFormBusy(form, true, "جار التحقق...");
+        const entered = normalizeDigits(new FormData(form).get("pin"));
+        try {
+          const valid = await verifyPin(entered, state.data.pin);
+          if (session !== state.session) return;
+          if (valid) {
+            state.pinFailures = 0;
+            state.authMode = null;
+            render();
+          } else {
+            state.pinFailures++;
+            if (state.pinFailures >= 5) { fullLock(); showToast("محاولات كثيرة. استخدم كلمة المرور الرئيسية.", true); }
+            else { showToast("رمز PIN غير صحيح.", true); form.elements.pin.value = ""; setFormBusy(form, false); form.elements.pin.focus(); }
+          }
+        } catch (error) {
+          if (session === state.session) {
+            showToast("تعذر التحقق من PIN.", true);
+            if (form.isConnected) setFormBusy(form, false);
+          }
+        } finally { if (session === state.session) state.authBusy = false; }
+      }
+
+      async function handlePinSetup(form) {
+        if (state.saving) return;
+        const fields = new FormData(form);
+        const pin = normalizeDigits(fields.get("pin"));
+        const confirm = normalizeDigits(fields.get("confirm"));
+        if (!/^[0-9]{4,8}$/.test(pin)) return showToast("اختر PIN من ٤ إلى ٨ أرقام فقط.", true);
+        if (pin !== confirm) return showToast("رمزا PIN غير متطابقين.", true);
+        setFormBusy(form, true, "جار الحفظ...");
+        const saved = await commitMutation(async data => {
+          const salt = base64(crypto.getRandomValues(new Uint8Array(16)));
+          data.pin = { salt, hash: await pinHash(pin, salt) };
+        });
+        if (saved) { renderContent(); showToast("تم حفظ قفل PIN."); }
+        else if (form.isConnected) setFormBusy(form, false);
+      }
+
+      function softLock() {
+        if (state.saving) return showToast("انتظر اكتمال الحفظ أولاً.", true);
+        if (dialog.open) closeModal();
+        state.session++;
+        state.authBusy = false;
+        state.visiblePasswords.clear();
+        state.search = "";
+        state.pinFailures = 0;
+        if (state.data?.pin) state.authMode = "pin";
+        else { state.key = null; state.data = null; state.authMode = "unlock"; }
+        render();
+      }
+
+      function fullLock() {
+        if (state.saving) return showToast("انتظر اكتمال الحفظ أولاً.", true);
+        if (dialog.open) closeModal();
+        state.session++;
+        state.authBusy = false;
+        state.visiblePasswords.clear();
+        state.key = null;
+        state.data = null;
+        state.search = "";
+        state.pinFailures = 0;
+        state.authMode = state.meta ? "unlock" : "setup";
+        render();
+      }
+
+      async function processImage(file) {
+        if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type)) throw new Error("اختر صورة PNG أو JPG أو WebP أو GIF.");
+        if (file.size > 8 * 1024 * 1024) throw new Error("الصورة أكبر من ٨ ميجابايت.");
+        const url = URL.createObjectURL(file);
+        try {
+          const image = new Image();
+          await new Promise((resolve, reject) => {
+            image.onload = resolve;
+            image.onerror = () => reject(new Error("تعذر قراءة الصورة."));
+            image.src = url;
+          });
+          if (!image.naturalWidth || !image.naturalHeight) throw new Error("الصورة غير صالحة.");
+          const scale = Math.min(1, 360 / Math.max(image.naturalWidth, image.naturalHeight));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+          canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+          const context = canvas.getContext("2d");
+          if (!context) throw new Error("تعذر تجهيز الصورة.");
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          const data = canvas.toDataURL("image/webp", .82);
+          if (!safeImage(data)) throw new Error("صيغة الصورة غير مدعومة.");
+          return data;
+        } finally { URL.revokeObjectURL(url); }
+      }
+
+      function updateImagePreview() {
+        const preview = dialog.querySelector("#image-preview");
+        if (preview) preview.innerHTML = avatar({ image: state.pendingImage }, "preview");
+        const remove = dialog.querySelector('[data-action="remove-image"]');
+        if (remove) remove.hidden = !state.pendingImage;
+      }
+
+      async function copyText(value, message) {
+        try {
+          let copied = false;
+          if (navigator.clipboard?.writeText && window.isSecureContext) {
+            try { await navigator.clipboard.writeText(value); copied = true; } catch (error) { /* Use the local selection fallback. */ }
+          }
+          if (!copied) {
+            const input = document.createElement("textarea");
+            input.value = value;
+            input.style.cssText = "position:fixed;top:-1000px;opacity:0";
+            document.body.appendChild(input);
+            try { input.select(); copied = document.execCommand("copy"); }
+            finally { input.remove(); }
+          }
+          if (!copied) throw new Error("فشل النسخ");
+          showToast(message);
+        } catch (error) { showToast("تعذر النسخ. تحقق من صلاحيات المتصفح.", true); }
+      }
+
+      async function exportBackup() {
+        if (state.saving) return showToast("انتظر اكتمال الحفظ أولاً.", true);
+        try {
+          const meta = validateMeta(await readRecord("meta"));
+          const vault = validateRecord(await readRecord("vault"));
+          const file = { format: "el5al-pass-backup", version: 1, exportedAt: new Date().toISOString(), meta, vault };
+          const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: "application/json" }));
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `el5al-pass-${new Date().toISOString().slice(0, 10)}.json`;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+          showToast("تم تنزيل النسخة الاحتياطية المشفرة.");
+        } catch (error) { showToast("تعذر تصدير النسخة الاحتياطية.", true); }
+      }
+
+      function validateBackup(value) {
+        if (!value || value.format !== "el5al-pass-backup" || value.version !== 1) throw new Error("هذا الملف ليس نسخة احتياطية متوافقة.");
+        return { meta: validateMeta(value.meta), vault: validateRecord(value.vault) };
+      }
+
+      async function readBackupFile(file) {
+        const session = state.session;
+        try {
+          const parsed = JSON.parse(await file.text());
+          if (session !== state.session) return;
+          state.pendingImport = validateBackup(parsed);
+          openModal("restore-password");
+        } catch (error) { if (session === state.session) showToast(error.message || "تعذر قراءة ملف النسخة الاحتياطية.", true); }
+      }
+
+      async function saveAccount(form) {
+        if (state.saving || state.imageLoading) return;
+        const fields = new FormData(form);
+        const name = fields.get("name").trim();
+        const username = fields.get("username").trim();
+        const password = fields.get("password");
+        const notes = fields.get("notes").trim();
+        const chosen = fields.get("collectionId");
+        const collectionId = chosen === "none" ? null : chosen;
+        if (!name || !username || !password || (collectionId && !findCollection(collectionId))) return showToast("تحقق من بيانات الحساب والمجموعة المختارة.", true);
+        const id = state.modal.id;
+        const image = state.pendingImage;
+        modalBusy(true);
+        const saved = await commitMutation(data => {
+          const now = Date.now();
+          if (id) {
+            const account = data.accounts.find(item => item.id === id);
+            if (!account) throw new Error("الحساب غير موجود.");
+            Object.assign(account, { name, username, password, image, collectionId, notes, updatedAt: now });
+          } else data.accounts.push({ id: newId(), name, username, password, image, collectionId, notes, createdAt: now, updatedAt: now });
+        });
+        if (saved) {
+          state.visiblePasswords.delete(id);
+          closeModal();
+          render();
+          showToast(id ? "تم تعديل الحساب بنجاح." : "تمت إضافة الحساب بنجاح.");
+        } else modalBusy(false);
+      }
+
+      async function saveCollection(form) {
+        if (state.saving) return;
+        const fields = new FormData(form);
+        const name = fields.get("name").trim();
+        const groupIcon = fields.get("icon");
+        const color = fields.get("color");
+        if (!name || !GROUP_ICONS.includes(groupIcon) || !GROUP_COLORS.includes(color)) return showToast("أدخل اسم المجموعة واختر الأيقونة واللون.", true);
+        const id = state.modal.id;
+        modalBusy(true);
+        const saved = await commitMutation(data => {
+          const now = Date.now();
+          if (id) {
+            const group = data.collections.find(item => item.id === id);
+            if (!group) throw new Error("المجموعة غير موجودة.");
+            Object.assign(group, { name, icon: groupIcon, color, updatedAt: now });
+          } else data.collections.push({ id: newId(), name, icon: groupIcon, color, createdAt: now, updatedAt: now });
+        });
+        if (saved) { closeModal(); render(); showToast(id ? "تم تعديل المجموعة بنجاح." : "تم إنشاء المجموعة بنجاح."); }
+        else modalBusy(false);
+      }
+
+      async function confirmAction() {
+        if (state.saving) return;
+        const { target, id } = state.modal;
+        modalBusy(true);
+        const saved = await commitMutation(data => {
+          if (target === "account") data.accounts = data.accounts.filter(account => account.id !== id);
+          else if (target === "collection") {
+            data.collections = data.collections.filter(group => group.id !== id);
+            for (const account of data.accounts) if (account.collectionId === id) { account.collectionId = null; account.updatedAt = Date.now(); }
+          } else data.pin = null;
+        });
+        if (saved) {
+          closeModal();
+          if (target === "account" && state.view === "detail") navigate(state.returnView, state.returnCollectionId);
+          else if (target === "collection" && state.view === "collection") navigate("collections");
+          else render();
+          showToast(target === "account" ? "تم حذف الحساب." : target === "collection" ? "تم حذف المجموعة ونقل حساباتها إلى غير مصنفة." : "تم تعطيل PIN.");
+        } else modalBusy(false);
+      }
+
+      async function prepareRestore(form) {
+        if (state.authBusy) return;
+        const session = state.session;
+        state.authBusy = true;
+        modalBusy(true, "جار التحقق...");
+        try {
+          const backup = state.pendingImport;
+          const key = await deriveKey(new FormData(form).get("password"), backup.meta);
+          const data = await decryptVault(backup.vault, key);
+          if (session !== state.session) return;
+          const prepared = { ...backup, key, data };
+          state.authBusy = false;
+          closeModal();
+          state.pendingRestore = prepared;
+          openModal("restore-confirm");
+        } catch (error) {
+          if (session === state.session) {
+            showToast("كلمة المرور غير صحيحة أو ملف النسخة تالف.", true);
+            if (form.isConnected) { form.elements.password.value = ""; modalBusy(false); form.elements.password.focus(); }
+          }
+        } finally { if (session === state.session) state.authBusy = false; }
+      }
+
+      async function finishRestore() {
+        if (state.saving || !state.pendingRestore) return;
+        const session = state.session;
+        state.saving = true;
+        modalBusy(true, "جار الاستعادة...");
+        const restored = state.pendingRestore;
+        try {
+          await writeRecords(["meta", "vault"], tx => { tx.objectStore("meta").put(restored.meta); tx.objectStore("vault").put(restored.vault); });
+          if (session !== state.session) return;
+          state.meta = restored.meta;
+          state.key = restored.key;
+          state.data = restored.data;
+          state.authMode = null;
+          state.view = "home";
+          state.collectionId = null;
+          state.search = "";
+          state.visiblePasswords.clear();
+          state.pinFailures = 0;
+          state.saving = false;
+          closeModal();
+          render();
+          showToast("تمت استعادة الحسابات والمجموعات والصور بنجاح.");
+        } catch (error) {
+          if (session !== state.session) return;
+          state.saving = false;
+          modalBusy(false);
+          showToast("تعذرت الاستعادة. لم تتغير بياناتك الحالية.", true);
+        }
+      }
+
+      document.addEventListener("submit", event => {
+        const form = event.target;
+        if (!["setup-form", "unlock-form", "pin-unlock-form", "pin-form"].includes(form.id)) return;
+        event.preventDefault();
+        if (form.id === "setup-form") handleSetup(form);
+        else if (form.id === "unlock-form") handleUnlock(form);
+        else if (form.id === "pin-unlock-form") handlePinUnlock(form);
+        else handlePinSetup(form);
+      });
+
+      dialog.addEventListener("submit", event => {
+        event.preventDefault();
+        if (event.target.id === "account-form") saveAccount(event.target);
+        else if (event.target.id === "collection-form") saveCollection(event.target);
+        else if (event.target.id === "confirm-form") confirmAction();
+        else if (event.target.id === "restore-password-form") prepareRestore(event.target);
+        else if (event.target.id === "restore-confirm-form") finishRestore();
+      });
+
+      document.addEventListener("input", event => {
+        if (event.target.id === "global-search") { state.search = event.target.value; renderContent(); }
+      });
+
+      document.addEventListener("change", async event => {
+        if (event.target.id === "account-image") {
+          const file = event.target.files?.[0];
+          if (!file) return;
+          const currentModal = state.modal;
+          state.imageLoading = true;
+          const submit = dialog.querySelector("[data-submit]");
+          if (submit) submit.disabled = true;
+          try {
+            const image = await processImage(file);
+            if (state.modal === currentModal) { state.pendingImage = image; updateImagePreview(); }
+          } catch (error) { showToast(error.message || "تعذر إضافة الصورة.", true); }
+          finally {
+            if (state.modal === currentModal) { state.imageLoading = false; if (submit) submit.disabled = false; }
+            event.target.value = "";
+          }
+        } else if (event.target.id === "backup-file") {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (file) await readBackupFile(file);
+        } else if (event.target.dataset.role === "move-account") {
+          if (state.saving) { renderContent(); return; }
+          const account = findAccount(event.target.dataset.id);
+          const collectionId = event.target.value === "none" ? null : event.target.value;
+          if (!account || (collectionId && !findCollection(collectionId)) || account.collectionId === collectionId) return;
+          const saved = await commitMutation(data => {
+            const item = data.accounts.find(value => value.id === account.id);
+            item.collectionId = collectionId;
+            item.updatedAt = Date.now();
+          });
+          renderContent();
+          if (saved) showToast("تم نقل الحساب إلى المجموعة المختارة.");
+        }
+      });
+
+      document.addEventListener("click", async event => {
+        const control = event.target.closest("[data-action]");
+        if (!control) {
+          const card = event.target.closest("[data-open-card]");
+          if (card && !state.authMode) openDetail(card.dataset.openCard);
+          return;
+        }
+        const { action, id } = control.dataset;
+        if (action.startsWith("nav-")) return navigate(action.slice(4));
+        if (action === "back-from-detail") return navigate(state.returnView, state.returnCollectionId);
+        if (action === "open-account") return openDetail(id);
+        if (action === "open-collection") return navigate("collection", id === "ungrouped" ? null : id);
+        if (action === "add-account") return openModal("account");
+        if (action === "add-collection") return openModal("collection");
+        if (action === "edit-account" && findAccount(id)) return openModal("account", { id });
+        if (action === "edit-collection" && findCollection(id)) return openModal("collection", { id });
+        if (action === "delete-account" && findAccount(id)) return openModal("confirm", { target: "account", id });
+        if (action === "delete-collection" && findCollection(id)) return openModal("confirm", { target: "collection", id });
+        if (action === "remove-pin") return openModal("confirm", { target: "pin" });
+        if (action === "close-modal") return closeModal();
+        if (action === "select-image") { dialog.querySelector("#account-image")?.click(); return; }
+        if (action === "remove-image") { state.pendingImage = null; updateImagePreview(); return; }
+        if (action === "modal-toggle-password") {
+          const input = dialog.querySelector("#account-password");
+          const visible = input.type === "password";
+          input.type = visible ? "text" : "password";
+          control.innerHTML = icon(visible ? "eyeOff" : "eye", 18);
+          control.setAttribute("aria-label", visible ? "إخفاء كلمة المرور" : "إظهار كلمة المرور");
+          control.setAttribute("title", visible ? "إخفاء كلمة المرور" : "إظهار كلمة المرور");
+          return;
+        }
+        if (action === "toggle-password") {
+          if (state.visiblePasswords.has(id)) state.visiblePasswords.delete(id);
+          else state.visiblePasswords.add(id);
+          renderContent();
+          [...document.querySelectorAll('[data-action="toggle-password"]')].find(button => button.dataset.id === id)?.focus();
+          return;
+        }
+        if (action === "copy-username" || action === "copy-password") {
+          const account = findAccount(id);
+          if (account) await copyText(action === "copy-username" ? account.username : account.password, action === "copy-username" ? "تم نسخ اسم المستخدم." : "تم نسخ كلمة المرور.");
+          return;
+        }
+        if (action === "clear-search") {
+          state.search = "";
+          render();
+          document.getElementById("global-search")?.focus();
+          return;
+        }
+        if (action === "lock-app") return softLock();
+        if (action === "use-master" && state.authBusy) return showToast("انتظر اكتمال التحقق أولاً.", true);
+        if (action === "full-lock" || action === "use-master") return fullLock();
+        if (action === "export-backup") return exportBackup();
+        if (action === "import-backup") {
+          if (state.authBusy || state.saving) return showToast("انتظر اكتمال العملية الحالية أولاً.", true);
+          backupFile.click();
+          return;
+        }
+      });
+
+      dialog.addEventListener("cancel", event => { event.preventDefault(); closeModal(); });
+      dialog.addEventListener("click", event => {
+        if (event.target !== dialog) return;
+        const bounds = dialog.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeModal();
+      });
+
+      window.addEventListener("pagehide", () => {
+        state.session++;
+        state.saving = false;
+        state.authBusy = false;
+        if (dialog.open) dialog.close();
+        dialog.innerHTML = "";
+        state.modal = null;
+        state.pendingImport = null;
+        state.pendingRestore = null;
+        state.pendingImage = null;
+        state.key = null;
+        state.data = null;
+        state.visiblePasswords.clear();
+        state.authMode = state.meta ? "unlock" : "setup";
+        render();
+      });
+
+      window.addEventListener("pageshow", event => {
+        if (event.persisted) {
+          state.db?.close();
+          state.db = null;
+          state.key = null;
+          state.data = null;
+          state.authMode = "loading";
+          render();
+          init();
+        }
+      });
+
+      init();
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</body>
+</html>
